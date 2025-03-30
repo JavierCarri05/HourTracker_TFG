@@ -71,6 +71,10 @@ fun LoginScreen() {
             }
         )
 
+        TextButton(onClick = { dialog = true }) {
+            Text("¿Olvidaste tu contraseña?")
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
@@ -79,10 +83,6 @@ fun LoginScreen() {
             enabled = username.isNotBlank() && password.isNotBlank()
         ) {
             Text("Login")
-        }
-
-        TextButton(onClick = { dialog = true }) {
-            Text("¿Olvidaste tu contraseña?")
         }
 
         if (dialog) {
@@ -140,8 +140,11 @@ fun LoginScreen() {
 
         Spacer(Modifier.height(8.dp))
 
-        TextButton(onClick = { /* formulario de registro */ }) {
-            Text("Register")
+        OutlinedButton(
+            onClick = { /* Registrar */ },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Registrar")
         }
     }
 }

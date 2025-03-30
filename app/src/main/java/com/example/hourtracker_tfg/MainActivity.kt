@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.hourtracker_tfg.Login.LoginScreen
+import com.example.hourtracker_tfg.Register.RegisterScreen
 import com.example.hourtracker_tfg.ui.theme.HourTracker_TFGTheme
 
 class MainActivity : ComponentActivity() {
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity() {
 //                    )
 //                }
                 LoginScreen()
+//                RegisterScreen()
             }
         }
     }
