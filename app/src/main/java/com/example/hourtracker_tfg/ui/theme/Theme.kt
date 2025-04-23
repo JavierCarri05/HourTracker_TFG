@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -56,3 +57,22 @@ fun HourTracker_TFGTheme(
         content = content
     )
 }
+
+//private val DarkColorScheme = darkColorScheme(
+//    primary = Color(0xFFBB86FC), // Color primario brillante
+//    secondary = Color(0xFF03DAC6),
+//    background = Color.Black, // Fondo oscuro
+//    surface = Color.Black, // Superficies oscuras
+//    onBackground = Color.White, // Texto en blanco
+//    onSurface = Color.White
+//)
+//
+//@Composable
+//fun HourTrackerTheme(
+//    content: @Composable () -> Unit
+//) {
+//    MaterialTheme(
+//        colorScheme = DarkColorScheme,
+//        content = content
+//    )
+//}
