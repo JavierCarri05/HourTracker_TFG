@@ -8,15 +8,18 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.hourtracker_tfg.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
+fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int) -> Unit){
     val context = LocalContext.current
     val registrarDBH = RegistrarDateBaseHelper(context) //Llamo al DateBaseHelper de register
 
@@ -69,7 +72,10 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text("Formulario de registro", style = MaterialTheme.typography.headlineMedium)
+        Text("Formulario de registro",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(30.dp))
 
         OutlinedTextField(
@@ -77,7 +83,13 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
             onValueChange = { gmail = it},
             label = { Text("Gmail") },
             isError =  gmailError,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+            )
         )
 
         if(gmailError){
@@ -95,7 +107,13 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
             onValueChange = { nombreUsuario = it },
             label = { Text("Usuario") },
             isError = nombreUsuarioError,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+            )
         )
         if(nombreUsuarioError){
             Text(
@@ -122,7 +140,13 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
                         contentDescription = if (mostrarContrasena) "Mostrar contraseña" else "Ocultar contraseña"
                     )
                 }
-            }
+            },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -142,7 +166,13 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
                         contentDescription = if (mostrarRepetirContrasena) "Mostrar contraseña" else "Ocultar contraseña"
                     )
                 }
-            }
+            },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+            )
         )
         if(repetirContrasenaError){
             Text(
@@ -160,21 +190,28 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHome: () -> Unit){
                 if(!gmailError && !nombreUsuarioError && !repetirContrasenaError && !contrasenaError){
                     //Si todos los campos son correctos, registramos al usuario
                     registrarDBH.nuevoUsuario(gmail, nombreUsuario, contrasena)
+                    val idUsuario = registrarDBH.obtenerIdUsuario(nombreUsuario)//Obtengo el id del usuario para trabajar sobre ese usuario
                     Toast.makeText(context, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
-                    navigateToHome()
+                    navigateToHomeHourTracker(idUsuario)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = gmail.isNotBlank() && nombreUsuario.isNotBlank() && contrasena.isNotBlank() && repetirContrasena.isNotBlank()
+            enabled = gmail.isNotBlank() && nombreUsuario.isNotBlank() && contrasena.isNotBlank() && repetirContrasena.isNotBlank(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF3B82F7)
+            )
         ) {
             Text("Registrar")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-       Button(
-            onClick = { navigateToLogin()},
-            modifier = Modifier.fillMaxWidth()
+        Button(
+            onClick = { navigateToLogin() },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF3B82F7)
+            )
         ) {
             Text("Iniciar Sesión")
         }

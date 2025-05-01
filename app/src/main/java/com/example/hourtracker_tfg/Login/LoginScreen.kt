@@ -11,13 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.hourtracker_tfg.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
+fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int) -> Unit) {
     val context = LocalContext.current
     val loginDBH = LoginDateBaseHelper(context)
 
@@ -44,7 +47,13 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Iniciar Sesion", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "Iniciar Sesión",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall
+        )
+
         Spacer(Modifier.height(30.dp))
 
         // Input del usuario
@@ -52,7 +61,13 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
             value = username,
             onValueChange = { username = it },
             label = { Text("Usuario") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -72,13 +87,25 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
                         contentDescription = if (passwordHidden) "Mostrar contraseña" else "Ocultar contraseña"
                     )
                 }
-            }
+            },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+            )
         )
 
         // Olvidar la contraseña
-        TextButton(onClick = { dialog = true }) {
-            Text("¿Olvidaste tu contraseña?")
+        TextButton(
+            onClick = { dialog = true },
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = Color(0xFF3B82F7)
+            )
+        ) {
+            Text(text = "¿Olvidaste tu contraseña?")
         }
+
 
         // Mensaje de error por si algo falla, como puede ser que la contraseña o el nombre de usuario no sean correctos
         if (errorMessage.isNotBlank()) {
@@ -86,7 +113,8 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
             Text(
                 text = errorMessage,
                 color = Color.Red,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold
             )
         }
 
@@ -97,14 +125,18 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
             onClick = {
                 // Validar las credenciales del usuario
                 if (loginDBH.comprobarUsuario(username, password)) {
+                    val idUsuario = loginDBH.obtenerIdUsuario(username)
                     Toast.makeText(context, "Iniciando sesion...", Toast.LENGTH_SHORT).show()
-                    navigateToHome() //Nos envia a la homeScreen
+                    navigateToHomeHourTracker(idUsuario) //Nos envia a la homeScreen, pero con el id del usuario para poder trabajar sobre ese usuario
                 } else {
                     errorMessage = "Usuario o contraseña incorrectos"
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = username.isNotBlank() && password.isNotBlank()
+            enabled = username.isNotBlank() && password.isNotBlank(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF3B82F7)
+            )
         ) {
             Text("Iniciar Sesión")
         }
@@ -130,12 +162,20 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
                         } else {
                             usernameForPasswordResetError = true
                         }
-                    }) {
+                    },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color(0xFF3B82F7)
+                        )
+                    ) {
                         Text("Aceptar")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { dialog = false }) {
+                    TextButton(onClick = { dialog = false },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color(0xFF3B82F7)
+                        )
+                    ) {
                         Text("Cancelar")
                     }
                 },
@@ -148,13 +188,20 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
                             onValueChange = { usernameForPasswordReset = it },
                             label = { Text("Nombre de usuario") },
                             isError = usernameForPasswordResetError,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+                            )
                         )
                         if (usernameForPasswordResetError) { //Si el usuario no existe, salta un mensaje de que no existe
                             Text(
                                 text = "Este usuario no existe.",
                                 color = Color.Red,
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold
                             )
                         }
 
@@ -173,7 +220,13 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
                                         contentDescription = if (newPasswordHidden) "Mostrar contraseña" else "Ocultar contraseña"
                                     )
                                 }
-                            }
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+                            )
                         )
                         // Repetir la nueva contraseña
                         OutlinedTextField(
@@ -190,7 +243,13 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
                                         contentDescription = if (repeatPasswordHidden) "Mostrar contraseña" else "Ocultar contraseña"
                                     )
                                 }
-                            }
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFF3B82F7), // borde azul cuando enfocado
+                                unfocusedBorderColor = Color(0xFF3B82F7), // borde azul cuando NO esta enfocado
+                                focusedLabelColor = Color(0xFF3B82F7), // label azul cuando enfocado
+                                cursorColor = Color(0xFF3B82F7) // cursor azul al escribir
+                            )
                         )
                     }
                 }
@@ -202,9 +261,13 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHome: () -> Unit) {
         // Ir al formulario de registro
         Button(
             onClick = { navigateToRegister() },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF3B82F7)
+            )
         ) {
             Text("Registrar")
         }
+
     }
 }

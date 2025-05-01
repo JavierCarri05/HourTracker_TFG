@@ -65,7 +65,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.serialization.json)
     val nav_version = "2.8.9"
-
     implementation("androidx.navigation:navigation-compose:$nav_version")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

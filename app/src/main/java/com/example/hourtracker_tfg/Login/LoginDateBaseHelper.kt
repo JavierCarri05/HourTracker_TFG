@@ -4,25 +4,21 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import com.example.hourtracker_tfg.BDD.BddHourTracker
 
 class LoginDateBaseHelper (context: Context) {
-    private val dbHelper = BddHourTracker(context)
+    //Aqui obtengo la instancia que he creado del DataBaseManager
+    val db = DatabaseManager.getInstance(context).getDatabase()
 
     fun comprobarUsuario(nombreUsuario: String, contrasena: String): Boolean{
-        val db: SQLiteDatabase = dbHelper.readableDatabase
         val consulta = "SELECT * FROM usuarios WHERE nombre_usuario = ? AND contrasena = ?"
         val cursor: Cursor = db.rawQuery(consulta, arrayOf(nombreUsuario, contrasena))
 
         val existeUsuario = cursor.moveToFirst()
         cursor.close()
-        db.close()
-
         return existeUsuario
     }
 
     fun cambiarContrasena(nombreUsuario: String, nuevaContrasena: String): Boolean{
-        val db: SQLiteDatabase = dbHelper.writableDatabase//Accedo a la base de datos
 
         /*
         Me creo un objeto de tipo "ContentValues" que este nos permite almacenar un conjunto de valores clave (Clave:Valor)
@@ -40,9 +36,17 @@ class LoginDateBaseHelper (context: Context) {
          */
         val actualizarContrasena = db.update("usuarios", contentValue, "nombre_usuario = ?", arrayOf(nombreUsuario))
 
-        db.close()
-
         //Si es mayor que 0 quiere decir que se han hecho cambios
         return actualizarContrasena > 0
     }
+
+    // Función para obtener el ID del usuario
+    fun obtenerIdUsuario(nombreUsuario: String): Int {
+        val consulta = "SELECT id FROM usuarios WHERE nombre_usuario = ?"
+        val cursor: Cursor = db.rawQuery(consulta, arrayOf(nombreUsuario))
+        val idUsuario = if (cursor.moveToFirst()) cursor.getInt(cursor.getColumnIndex("id")) else 0
+        cursor.close()
+        return idUsuario
+    }
+
 }

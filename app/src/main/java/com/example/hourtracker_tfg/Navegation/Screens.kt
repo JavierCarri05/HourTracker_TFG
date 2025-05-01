@@ -9,4 +9,4 @@ object Login
 object Resgistro
 
 @Serializable
-object Home //Pruebas para el login y el registro
+data class HourTrackerScreen(val idUsuario: Int) //Le paso el id del usuario
