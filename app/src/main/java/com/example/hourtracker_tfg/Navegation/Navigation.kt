@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.hourtracker_tfg.ScreensApp.HourTrackerScreen
 import com.example.hourtracker_tfg.Login.LoginScreen
 import com.example.hourtracker_tfg.Register.RegisterScreen
+import com.example.hourtracker_tfg.ScreensApp.Ajustes.AjustesScreen
 
 @Composable
 fun NavigationScreens() {
@@ -40,8 +41,24 @@ fun NavigationScreens() {
 
         // Aquí definimos la ruta dinámica para HourTrackerScreen
         composable("hourTrackerScreen/{id}") { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")?.toInt() ?: 0 // Obtener el ID de la ruta
-            HourTrackerScreen(idUsuario = id) // Pasar el ID del usuario al composable
+            val id = backStackEntry.arguments?.getString("id")?.toInt() ?: 0
+            HourTrackerScreen(
+                idUsuario = id,
+                navController = navController
+            )
         }
+
+        composable("ajustesScreen/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toInt() ?: 0
+            AjustesScreen(
+                idUsuario = id,
+                onCerrarSesion = {
+                    navController.navigate("login") {
+                        popUpTo("hourTrackerScreen/{id}") { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }

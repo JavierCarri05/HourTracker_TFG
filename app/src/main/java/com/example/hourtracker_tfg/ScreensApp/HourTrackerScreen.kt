@@ -9,11 +9,13 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import com.example.hourtracker_tfg.R
 import kotlinx.coroutines.delay
@@ -21,7 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun HourTrackerScreen(idUsuario: Int) {
+fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
     val icon = painterResource(id = R.drawable.time)
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     var currentDay by remember { mutableStateOf(getCurrentDay()) }
@@ -30,12 +32,10 @@ fun HourTrackerScreen(idUsuario: Int) {
     var currentWeek by remember { mutableStateOf(getCurrentWeek()) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    // 🔥 Database helper y resumen
     val context = LocalContext.current
     val db = remember { TurnosDataBaseHelper(context) }
     var resumen by remember { mutableStateOf(db.obtenerResumenTurnos(idUsuario)) }
 
-    // Actualiza la hora en tiempo real
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000L)
@@ -66,7 +66,7 @@ fun HourTrackerScreen(idUsuario: Int) {
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = {},
+                    onClick = { navController.navigate("ajustesScreen/$idUsuario") },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Ajustes") },
                     label = { Text("Ajustes") }
                 )
@@ -86,7 +86,8 @@ fun HourTrackerScreen(idUsuario: Int) {
             Text(
                 text = "HourTracker",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -94,34 +95,42 @@ fun HourTrackerScreen(idUsuario: Int) {
             Text(
                 text = currentTime,
                 fontSize = 36.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = currentDay,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = { showBottomSheet = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF3B82F7)
+                )
             ) {
                 Text("Nueva Actividad")
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Bloque de resumen: Hoy
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF1C1C1E) // 🔳 Fondo gris oscuro
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
+                    // Hoy
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -129,18 +138,28 @@ fun HourTrackerScreen(idUsuario: Int) {
                     ) {
                         Text(
                             text = "Hoy",
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
                         )
-                        Text(text = currentDayName)
+                        Text(
+                            text = currentDayName,
+                            color = Color.White
+                        )
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(text = resumen.horasHoy)
-                            Text(text = resumen.gananciasHoy)
+                            Text(
+                                text = resumen.horasHoy,
+                                color = Color.White
+                            )
+                            Text(
+                                text = resumen.gananciasHoy,
+                                color = Color(0xFF3B82F7)
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Bloque de resumen: Semana
+                    // Semana
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -148,18 +167,28 @@ fun HourTrackerScreen(idUsuario: Int) {
                     ) {
                         Text(
                             text = "Semana",
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
                         )
-                        Text(text = "nº $currentWeek")
+                        Text(
+                            text = "nº $currentWeek",
+                            color = Color.White
+                        )
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(text = resumen.horasSemana)
-                            Text(text = resumen.gananciasSemana)
+                            Text(
+                                text = resumen.horasSemana,
+                                color = Color.White
+                            )
+                            Text(
+                                text = resumen.gananciasSemana,
+                                color = Color(0xFF3B82F7)
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Bloque de resumen: Mes
+                    // Mes
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -167,12 +196,22 @@ fun HourTrackerScreen(idUsuario: Int) {
                     ) {
                         Text(
                             text = "Mes",
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
                         )
-                        Text(text = currentMonth)
+                        Text(
+                            text = currentMonth,
+                            color = Color.White
+                        )
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(text = resumen.horasMes)
-                            Text(text = resumen.gananciasMes)
+                            Text(
+                                text = resumen.horasMes,
+                                color = Color.White
+                            )
+                            Text(
+                                text = resumen.gananciasMes,
+                                color = Color(0xFF3B82F7)
+                            )
                         }
                     }
                 }
@@ -180,13 +219,12 @@ fun HourTrackerScreen(idUsuario: Int) {
             Spacer(modifier = Modifier.weight(0.5f))
         }
 
-        // Mostrar el BottomSheet si está activo
         if (showBottomSheet) {
             BottomShet(
                 idUsuario = idUsuario,
                 onDismiss = {
                     showBottomSheet = false
-                    resumen = db.obtenerResumenTurnos(idUsuario) // 🔄 Refresca al cerrar la sheet
+                    resumen = db.obtenerResumenTurnos(idUsuario)
                 }
             )
         }
