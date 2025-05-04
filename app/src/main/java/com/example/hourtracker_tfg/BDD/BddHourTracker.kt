@@ -8,7 +8,7 @@ class BddHourTracker (context: Context) : SQLiteOpenHelper(context, NOMBRE_BDD, 
     //Aqui defino el nombre y la version de la bdd
     companion object{
         const val NOMBRE_BDD = "HourTracker.db"
-        const val VERSION_BDD = 1
+        const val VERSION_BDD = 2
     }
 
     //CREAR Y BORRAR TABLAS

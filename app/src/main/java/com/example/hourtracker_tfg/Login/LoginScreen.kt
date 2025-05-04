@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.hourtracker_tfg.BDD.SessionManager
 import com.example.hourtracker_tfg.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +39,8 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int)
     var usernameForPasswordResetError by rememberSaveable { mutableStateOf(false) }
     var newPasswordHidden by rememberSaveable { mutableStateOf(true) }
     var repeatPasswordHidden by rememberSaveable { mutableStateOf(true) }
+
+    val sessionManager = SessionManager(context) //Esta variable es para mantener la sesion abierta
 
     Column(
         modifier = Modifier
@@ -123,11 +125,11 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int)
         // Boton de iniciar sesion
         Button(
             onClick = {
-                // Validar las credenciales del usuario
                 if (loginDBH.comprobarUsuario(username, password)) {
                     val idUsuario = loginDBH.obtenerIdUsuario(username)
-                    Toast.makeText(context, "Iniciando sesion...", Toast.LENGTH_SHORT).show()
-                    navigateToHomeHourTracker(idUsuario) //Nos envia a la homeScreen, pero con el id del usuario para poder trabajar sobre ese usuario
+                    sessionManager.guardarIdUsuario(idUsuario) //Aqui guardo la sesion del usuario
+                    Toast.makeText(context, "Iniciando sesión...", Toast.LENGTH_SHORT).show()
+                    navigateToHomeHourTracker(idUsuario)
                 } else {
                     errorMessage = "Usuario o contraseña incorrectos"
                 }

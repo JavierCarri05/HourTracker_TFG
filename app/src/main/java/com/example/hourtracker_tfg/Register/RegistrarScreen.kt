@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.hourtracker_tfg.BDD.SessionManager
 import com.example.hourtracker_tfg.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,6 +23,7 @@ import com.example.hourtracker_tfg.R
 fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int) -> Unit){
     val context = LocalContext.current
     val registrarDBH = RegistrarDateBaseHelper(context) //Llamo al DateBaseHelper de register
+    val sessionManager = SessionManager(context) // para guardar la sesion
 
     var gmail by rememberSaveable { mutableStateOf("") }
     var gmailError  by rememberSaveable { mutableStateOf(false) }
@@ -191,6 +193,7 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int)
                     //Si todos los campos son correctos, registramos al usuario
                     registrarDBH.nuevoUsuario(gmail, nombreUsuario, contrasena)
                     val idUsuario = registrarDBH.obtenerIdUsuario(nombreUsuario)//Obtengo el id del usuario para trabajar sobre ese usuario
+                    sessionManager.guardarIdUsuario(idUsuario) //Guardo la sesion
                     Toast.makeText(context, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
                     navigateToHomeHourTracker(idUsuario)
                 }
