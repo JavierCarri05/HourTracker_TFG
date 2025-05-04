@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.hourtracker_tfg.R
 
@@ -18,7 +19,7 @@ import com.example.hourtracker_tfg.R
 fun BarraNavegacion(
     selectedItem: String,
     idUsuario: Int,
-    navController: NavHostController
+    navController: NavController
 ) {
     val icon = painterResource(id = R.drawable.time)
 
@@ -58,12 +59,8 @@ fun BarraNavegacion(
         )
         // Ajustes
         NavigationBarItem(
-            selected = selectedItem == "Ajustes",
-            onClick = {
-                if (selectedItem != "Ajustes") {
-                    navController.navigate("settingsScreen/$idUsuario")
-                }
-            },
+            selected = false,
+            onClick = { navController.navigate("ajustesScreen/$idUsuario") },
             icon = { Icon(Icons.Default.Settings, contentDescription = "Ajustes") },
             label = { Text("Ajustes") }
         )

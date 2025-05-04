@@ -45,32 +45,11 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Filled.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {},
-                    icon = { Icon(painter = icon, contentDescription = "Sumario") },
-                    label = { Text("Sumario") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = "Gestionar") },
-                    label = { Text("Gestionar") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate("ajustesScreen/$idUsuario") },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Ajustes") },
-                    label = { Text("Ajustes") }
-                )
-            }
+            BarraNavegacion(
+                selectedItem = "Inicio",
+                idUsuario = idUsuario,
+                navController = navController
+            )
         }
     ) { paddingValues ->
         Column(

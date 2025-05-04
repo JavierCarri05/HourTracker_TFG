@@ -56,9 +56,9 @@ fun NavigationScreens() {
                     navController.navigate("login") {
                         popUpTo("hourTrackerScreen/{id}") { inclusive = true }
                     }
-                }
+                },
+                navController = navController
             )
         }
-
     }
 }
