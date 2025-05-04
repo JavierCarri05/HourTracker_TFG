@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.hourtracker_tfg.BDD.BddHourTracker
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
+import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,35 +102,56 @@ fun BottomShet(idUsuario: Int, onDismiss: () -> Unit){ //Le paso el id del usuar
                 TextButton(
                     onClick = {
                         if (comienzo.isNotEmpty() && fin.isNotEmpty()) {
-                            val pausaInt = try {
-                                val parts = pausa.split("h", "m").map { it.trim() }
-                                val horas = parts[0].toIntOrNull() ?: 0
-                                val minutos = parts[1].toIntOrNull() ?: 0
-                                (horas * 60) + minutos
-                            } catch (e: Exception) {
-                                0
+                            // Convertir fechas a objetos Date para comparar
+                            val sdfFull = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "ES"))
+                            val fechaInicio = sdfFull.parse(comienzo)
+                            val fechaFin = sdfFull.parse(fin)
+
+                            if (fechaInicio != null && fechaFin != null && fechaFin.after(fechaInicio)) {
+                                // Solo si la fecha de fin es posterior a la de inicio
+                                val pausaInt = try {
+                                    val parts = pausa.split("h", "m").map { it.trim() }
+                                    val horas = parts[0].toIntOrNull() ?: 0
+                                    val minutos = parts[1].toIntOrNull() ?: 0
+                                    (horas * 60) + minutos
+                                } catch (e: Exception) {
+                                    0
+                                }
+
+                                val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
+                                val plusVal = plus.toDoubleOrNull() ?: 0.0
+
+                                bdd.insertarTurno(
+                                    idUsuario = idUsuario,
+                                    fechaInicio = comienzo,
+                                    fechaFin = fin,
+                                    pausa = pausaInt,
+                                    tarifaHora = tarifa,
+                                    plus = plusVal,
+                                    nota = nota
+                                )
+
+                                scope.launch {
+                                    sheetState.hide()
+                                    onDismiss()
+                                }
+                            } else {
+                                // Mostrar mensaje de error
+                                Toast.makeText(
+                                    context,
+                                    "La fecha de fin debe ser posterior a la fecha de inicio",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
-
-                            val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
-                            val plusVal = plus.toDoubleOrNull() ?: 0.0
-
-                            bdd.insertarTurno(
-                                idUsuario = idUsuario,
-                                fechaInicio = comienzo,
-                                fechaFin = fin,
-                                pausa = pausaInt,
-                                tarifaHora = tarifa,
-                                plus = plusVal,
-                                nota = nota
-                            )
+                        } else {
+                            // Campos obligatorios no completados
+                            Toast.makeText(
+                                context,
+                                "Debes seleccionar las fechas de inicio y fin",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
-
-                        scope.launch {
-                            sheetState.hide()
-                            onDismiss()
-                        }
-                    }
-,
+                    },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = Color(0xFF3B82F7)
                     )

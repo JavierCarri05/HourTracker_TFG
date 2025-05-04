@@ -2,10 +2,6 @@ package com.example.hourtracker_tfg.ScreensApp
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +20,8 @@ import java.util.*
 
 @Composable
 fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
-    val icon = painterResource(id = R.drawable.time)
+
+
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     var currentDay by remember { mutableStateOf(getCurrentDay()) }
     var currentDayName by remember { mutableStateOf(getDayName()) }
@@ -103,7 +100,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1C1C1E) // 🔳 Fondo gris oscuro
+                    containerColor = Color(0xFF1C1C1E)
                 )
             ) {
                 Column(
@@ -126,11 +123,11 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
                         )
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = resumen.horasHoy,
+                                text = resumen.horasHoy, //Le paso la horas de hoy
                                 color = Color.White
                             )
                             Text(
-                                text = resumen.gananciasHoy,
+                                text = resumen.gananciasHoy, // Y aqui las ganancias
                                 color = Color(0xFF3B82F7)
                             )
                         }
@@ -155,11 +152,11 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
                         )
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = resumen.horasSemana,
+                                text = resumen.horasSemana, //Le paso las horas totales de la semana
                                 color = Color.White
                             )
                             Text(
-                                text = resumen.gananciasSemana,
+                                text = resumen.gananciasSemana, // Y lo mismo con las ganancias
                                 color = Color(0xFF3B82F7)
                             )
                         }
@@ -184,11 +181,11 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
                         )
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = resumen.horasMes,
+                                text = resumen.horasMes, //Le paso las horas totales del mes
                                 color = Color.White
                             )
                             Text(
-                                text = resumen.gananciasMes,
+                                text = resumen.gananciasMes, //Y lo mismo con las ganacias
                                 color = Color(0xFF3B82F7)
                             )
                         }
@@ -210,7 +207,6 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
     }
 }
 
-// --------- UTILIDADES -----------
 
 fun getCurrentTime(): String {
     val sdf = SimpleDateFormat("HH:mm:ss", Locale("es", "ES"))

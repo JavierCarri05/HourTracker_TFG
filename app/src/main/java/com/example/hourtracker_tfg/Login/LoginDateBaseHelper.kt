@@ -44,7 +44,12 @@ class LoginDateBaseHelper (context: Context) {
     fun obtenerIdUsuario(nombreUsuario: String): Int {
         val consulta = "SELECT id FROM usuarios WHERE nombre_usuario = ?"
         val cursor: Cursor = db.rawQuery(consulta, arrayOf(nombreUsuario))
-        val idUsuario = if (cursor.moveToFirst()) cursor.getInt(cursor.getColumnIndex("id")) else 0
+        val idUsuario = if (cursor.moveToFirst()) {
+            val index = cursor.getColumnIndex("id")
+            if (index != -1) cursor.getInt(index) else 0
+        } else {
+            0
+        }
         cursor.close()
         return idUsuario
     }
