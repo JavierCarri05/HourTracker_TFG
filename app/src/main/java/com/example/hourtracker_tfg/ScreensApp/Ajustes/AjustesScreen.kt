@@ -108,7 +108,7 @@ fun AjustesScreen(
                     containerColor = Color(0xFF3B82F7)
                 )
             ) {
-                Text("Borrar Todos los Datos")
+                Text("Borrar Datos")
             }
         }
 

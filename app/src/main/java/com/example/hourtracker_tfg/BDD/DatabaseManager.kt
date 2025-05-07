@@ -15,13 +15,6 @@ class DatabaseManager private constructor(context: Context) {
         return database!!
     }
 
-    // No cierres la base de datos aquí
-//    fun close() {
-//         Solo ciérrala cuando realmente la necesites cerrar (por ejemplo, cuando la aplicación se detiene)
-//        database?.close()
-//        database = null
-//    }
-
     companion object {
         @Volatile
         private var INSTANCE: DatabaseManager? = null

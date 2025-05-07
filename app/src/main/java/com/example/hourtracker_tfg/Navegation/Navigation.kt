@@ -1,25 +1,42 @@
 package com.example.hourtracker_tfg.Navegation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.hourtracker_tfg.ScreensApp.HourTrackerScreen
+import com.example.hourtracker_tfg.BDD.SessionManager
+import com.example.hourtracker_tfg.ScreensApp.Inicio.HourTrackerScreen
 import com.example.hourtracker_tfg.Login.LoginScreen
 import com.example.hourtracker_tfg.Register.RegisterScreen
 import com.example.hourtracker_tfg.ScreensApp.Ajustes.AjustesScreen
+import com.example.hourtracker_tfg.ScreensApp.Sumario.SumarioScreen
 
 @Composable
 fun NavigationScreens() {
     val navController = rememberNavController()
     var idUsuario by rememberSaveable { mutableStateOf(0) }
+    val context = LocalContext.current
+    val sesionManager = SessionManager(context)
 
-    NavHost(navController = navController, startDestination = "login") { // Ruta inicial: Login
-        composable("login") {
+    LaunchedEffect(Unit) {
+        val userId = sesionManager.getUserId()
+        if (userId != null) {
+            // Hay sesión guardada, navegar directamente a HourTrackerScreen
+            idUsuario = userId
+            navController.navigate("hourTrackerScreen/$idUsuario") {
+                popUpTo(0)
+            }
+        }
+    }
+
+    NavHost(navController = navController, startDestination = Login) { // Ruta inicial: Login
+        composable<Login> {
             LoginScreen(
                 navigateToRegister = { navController.navigate("register") }, // Navegar a register
                 navigateToHomeHourTracker = { id ->
@@ -59,6 +76,12 @@ fun NavigationScreens() {
                 },
                 navController = navController
             )
+        }
+
+        //Navegacion hacia el sumario Screen
+        composable("sumarioScreen/{idUsuario}"){ backStackEntry ->
+            val idUsuario = backStackEntry.arguments?.getString("idUsuario")?.toInt() ?: 0
+            SumarioScreen(idUsuario = idUsuario, navController = navController)
         }
     }
 }

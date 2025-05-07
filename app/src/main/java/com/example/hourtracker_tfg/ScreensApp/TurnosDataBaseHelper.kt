@@ -1,6 +1,7 @@
 package com.example.hourtracker_tfg.BDD
 
 import android.content.Context
+import com.example.hourtracker_tfg.ScreensApp.Sumario.DiaTrabajo
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,7 +34,8 @@ class TurnosDataBaseHelper(context: Context) {
         nota: String
     ) {
         //2.
-        val sql = "INSERT INTO turnos (id_usuario, fecha_inicio, fecha_fin, pausa, tarifa_hora, plus, nota) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        val sql =
+            "INSERT INTO turnos (id_usuario, fecha_inicio, fecha_fin, pausa, tarifa_hora, plus, nota) VALUES (?, ?, ?, ?, ?, ?, ?)"
         //3.
         val stmt = db.compileStatement(sql)
         //4.
@@ -155,11 +157,155 @@ class TurnosDataBaseHelper(context: Context) {
     }
 
     //Metodo para borrar los datos de los turnos del usuario
-    fun borrarDatos(idUsuario: Int){
-        db.delete("turnos","id_usuario = ?", arrayOf(idUsuario.toString()))
+    fun borrarDatos(idUsuario: Int) {
+        db.delete("turnos", "id_usuario = ?", arrayOf(idUsuario.toString()))
     }
 
-    // Función mejorada que compara si dos fechas son del mismo día
+    //Funcion para calcular la media de lo que cobra por hora el usuario
+    fun mediaPrecioPorHora(idUsuario: Int): Double {
+        val cursor = db.rawQuery(
+            //La consulta la pongo sobre """ ... """ ya que es un string en kotlin es ideal para SQL
+            """
+        SELECT AVG(tarifa_hora) FROM turnos WHERE id_usuario = ?
+        """.trimIndent(), arrayOf(idUsuario.toString())
+            //el "trimIndent" lo que hace es limpiar los margenes para que la consulta no tenga espacion innecesarios y queda mas limpia
+        )
+        var media = 0.0
+        if (cursor.moveToFirst()) {
+            //Aqui obtengo la media. esta puede ser null si no se han registrados datos
+            media = cursor.getDouble(0)
+        }
+        cursor.close()
+        return media
+    }
+
+    //Funcion para agrupar los turnos por mes y dia y calcular las horas y el dinero
+    //Esta funcion devulve un map los meses y una lista de los dias de los meses
+    fun jornadasPorMes(idUsuario: Int): Map<String, List<DiaTrabajo>> {
+        val cursor = db.rawQuery(
+            """
+            SELECT fecha_inicio, fecha_fin, pausa, tarifa_hora, plus
+            FROM turnos
+            WHERE id_usuario = ?
+            ORDER BY fecha_inicio DESC
+            """.trimIndent(), arrayOf(idUsuario.toString())
+            //Ordeno la consulta de manera descendente para que me muestre lo mas actual
+        )
+
+        //Parseo las fechas
+        val pais = Locale("es", "ES")
+        val entrada = SimpleDateFormat("dd/MM/yyyy HH:mm", pais) //Esta variable la utilizo para leer la fecha de la BBDD
+        val mes = SimpleDateFormat("MMMM yyyy", pais) //Variable para formatear la fecha en texto de mes
+        val dia = SimpleDateFormat("dd/MM/yyyy", pais) //variable para agrupar por dia
+
+        //Hago la estructura --> mes -> dia -> lista turnos
+
+        /*
+        La variable mapa nos permite agrupa de la siguiente manera:
+            mes -> dia--> lista turnos
+         */
+        val mapa = mutableMapOf<String, MutableMap<String, MutableList<TurnoSimple>>>()
+
+        while (cursor.moveToNext()) {
+            val fechaInicio = cursor.getString(0)
+            val fechaFin = cursor.getString(1)
+            val pausa = cursor.getInt(2)
+            val tarifaHora = cursor.getDouble(3)
+            val plus = cursor.getDouble(4)
+
+            val date = entrada.parse(fechaInicio)
+
+            if (date != null) {
+                val mes = mes.format(date).replaceFirstChar {
+                    /*
+                    Aqui lo que hago es remplazar el primer caracterer para que quede mejor, ya que haciendo esto
+                    el mes se mostraria asi "Abril" y asi queda mejor
+                     */
+                    if (it.isLowerCase()) {
+                        it.titlecase()
+                    } else {
+                        it.toString()
+                    }
+                }
+                val dia = dia.format(date)
+
+                //Me creo un objeto de TurnoSimple para almacenar los datos de cada turno y asi facilitar su calculo
+                val turno = TurnoSimple(
+                    fechaInicio = fechaInicio,
+                    fechaFin = fechaFin,
+                    pausa = pausa,
+                    tarifaHora = tarifaHora,
+                    plus = plus
+                )
+
+                /*
+                Aqui lo que hago es crear una entrada para el solo si no existe
+                 */
+                if(!mapa.containsKey(mes)){
+                    mapa[mes] = mutableMapOf()
+                }
+
+                /*
+                Aqui hago lo mismo que el if anterior
+                pero en ese compruebo que ese dia en ese mes tambien existe antes de meterlo a los turnos
+                y la "!!" estas quieren decir que esto no es null porque lo acabo de crear antes
+                 */
+                if(!mapa[mes]!!.containsKey(dia)){
+                    mapa[mes]!![dia] = mutableListOf()
+                }
+                //Meto el turno en la lista correcta, que es el dia correcto del mes correcto
+                mapa[mes]!![dia]?.add(turno)
+            }
+        }
+        cursor.close()
+
+        //Ahora el mapa lo convierto a al estructura final
+
+        //Me creo un mapa final para devolver solo lo que necesito mostrar por pantalla
+        val resultado = mutableMapOf<String, List<DiaTrabajo>>()
+
+        mapa.forEach { (mes, diasMap) ->
+            //En este forEach recorro todo lo que agrupo y asi hacer los calculos (sumar las horas, sumar las ganancias y crear un dia de trabajo por cada dia)
+            val listaDias = diasMap.map { (dia, turnos) ->
+                var totalMinutos = 0
+                var totalGanancias = 0.0
+
+                val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", pais)
+
+                turnos.forEach { turno ->
+                    val comienzo = sdf.parse(turno.fechaInicio)
+                    val fin = sdf.parse(turno.fechaFin)
+                    if(comienzo != null && fin != null){
+                        val duracion = ((fin.time - comienzo.time) / (1000 * 60)).toInt() - turno.pausa
+                        val hora = duracion / 60.0
+                        totalMinutos += duracion
+                        totalGanancias += (hora * turno.tarifaHora) + turno.plus
+                    }
+                }
+
+                DiaTrabajo(
+                    fecha = dia,
+                    turnosTotales = turnos.size,
+                    horas = "${totalMinutos / 60}h ${totalMinutos % 60}m",
+                    ganancias = String.format("%.2f €", totalGanancias)
+                )
+            }
+            resultado[mes] = listaDias
+        }
+        return resultado
+    }
+
+    //Clase para almacenar cada turno antes de sumarlo
+    //Y tambien la creo para qeu quede mas limpio el codigo
+    data class TurnoSimple(
+        val fechaInicio: String,
+        val fechaFin: String,
+        val pausa: Int,
+        val tarifaHora: Double,
+        val plus: Double
+    )
+
+    // Funcion que compara si dos fechas son del mismo día
     private fun mismoDia(date1: Date, date2: Date): Boolean {
         // Crear un formato que solo tenga en cuenta la fecha, sin la hora
         val sdf = SimpleDateFormat("yyyyMMdd", Locale("es", "ES"))
@@ -167,4 +313,5 @@ class TurnosDataBaseHelper(context: Context) {
         // Comparar las cadenas de fecha
         return sdf.format(date1) == sdf.format(date2)
     }
+
 }
