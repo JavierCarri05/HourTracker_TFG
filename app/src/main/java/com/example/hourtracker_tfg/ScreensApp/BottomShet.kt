@@ -23,10 +23,8 @@ import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.hourtracker_tfg.BDD.BddHourTracker
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,6 +53,11 @@ fun BottomShet(idUsuario: Int, onDismiss: () -> Unit){ //Le paso el id del usuar
 
     //Variable de la base de datos
     val bdd = TurnosDataBaseHelper(context)
+
+    //Esta variable es para recuperar recuperar la fecha que ha seleccionado el usuario para añadir el comienzo de la jornada
+    val fechaSeleccionada = Calendar.getInstance(TimeZone.getTimeZone("Europa/Madrid"))
+    var fechaComienzo by remember { mutableStateOf<Calendar?>(null) }
+    var fechaFin by remember { mutableStateOf<Calendar?>(null) }
 
 
     // Mostrar la sheet directamente cuando se monta
@@ -186,26 +189,40 @@ fun BottomShet(idUsuario: Int, onDismiss: () -> Unit){ //Le paso el id del usuar
                     ) {
                         Text("Comienzo", color = Color.White)
                         TextButton(onClick = {
-                            val calendar = Calendar.getInstance()
+                            var calendario = Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
+                            if(fechaFin != null){
+                                calendario = fechaFin!!
+                            }else{
+                                calendario = Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
+                            }
                             DatePickerDialog(
                                 context,
-                                { _, year, month, day ->
+                                { _, ano, mes, dia ->
                                     TimePickerDialog(
                                         context,
-                                        { _, hour, minute ->
+                                        { _, hora, minuto ->
                                             comienzo = String.format(
                                                 "%02d/%02d/%d %02d:%02d",
-                                                day, month + 1, year, hour, minute
+                                                dia, mes + 1, ano, hora, minuto
                                             )
+                                            /*
+                                            La siguiente variable es para que si yo en el comienzo añado
+                                            una fecha que no es la actual, pues cuando añado el fin
+                                            me marca el dia actual, entonces con la esta variable
+                                            lo que voy a conseguir es que si yo selecciono un dia que no es
+                                            el actual me lo guarda y lo recupera en fin y asi le facilitamos la vida al usuario
+                                             */
+                                            fechaSeleccionada.set(ano, mes, dia, hora, minuto)
+                                            fechaComienzo = fechaSeleccionada
                                         },
-                                        calendar.get(Calendar.HOUR_OF_DAY),
-                                        calendar.get(Calendar.MINUTE),
+                                        calendario.get(Calendar.HOUR_OF_DAY),
+                                        calendario.get(Calendar.MINUTE),
                                         true
                                     ).show()
                                 },
-                                calendar.get(Calendar.YEAR),
-                                calendar.get(Calendar.MONTH),
-                                calendar.get(Calendar.DAY_OF_MONTH)
+                                calendario.get(Calendar.YEAR),
+                                calendario.get(Calendar.MONTH),
+                                calendario.get(Calendar.DAY_OF_MONTH)
                             ).show()
                         }) {
                             Text(
@@ -224,26 +241,35 @@ fun BottomShet(idUsuario: Int, onDismiss: () -> Unit){ //Le paso el id del usuar
                     ) {
                         Text("Fin", color = Color.White)
                         TextButton(onClick = {
-                            val calendar = Calendar.getInstance()
+                            //Si la fechaComienzo no es null pues le asigno la fecha de comienzo al calendario
+                            //Pero si es null le asigno la fecha actual
+                            val calendario: Calendar
+                            if(fechaComienzo != null){
+                                calendario = fechaComienzo!!
+                            }else{
+                                calendario = Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
+                            }
                             DatePickerDialog(
                                 context,
-                                { _, year, month, day ->
+                                { _, ano, mes, dia ->
                                     TimePickerDialog(
                                         context,
-                                        { _, hour, minute ->
+                                        { _, hora, minuto ->
                                             fin = String.format(
                                                 "%02d/%02d/%d %02d:%02d",
-                                                day, month + 1, year, hour, minute
+                                                dia, mes + 1, ano, hora, minuto
                                             )
+                                            fechaSeleccionada.set(ano, mes, dia, hora, minuto)
+                                            fechaFin = fechaSeleccionada
                                         },
-                                        calendar.get(Calendar.HOUR_OF_DAY),
-                                        calendar.get(Calendar.MINUTE),
+                                        calendario.get(Calendar.HOUR_OF_DAY),
+                                        calendario.get(Calendar.MINUTE),
                                         true
                                     ).show()
                                 },
-                                calendar.get(Calendar.YEAR),
-                                calendar.get(Calendar.MONTH),
-                                calendar.get(Calendar.DAY_OF_MONTH)
+                                calendario.get(Calendar.YEAR),
+                                calendario.get(Calendar.MONTH),
+                                calendario.get(Calendar.DAY_OF_MONTH)
                             ).show()
                         }) {
                             Text(
@@ -262,11 +288,10 @@ fun BottomShet(idUsuario: Int, onDismiss: () -> Unit){ //Le paso el id del usuar
                     ) {
                         Text("Pausa", color = Color.White)
                         TextButton(onClick = {
-                            val calendar = Calendar.getInstance()
                             TimePickerDialog(
                                 context,
-                                { _, hour, minute ->
-                                    pausa = "${hour}h ${String.format("%02d", minute)}m"
+                                { _, hora, minuto ->
+                                    pausa = "${hora}h ${String.format("%02d", minuto)}m"
                                 },
                                 0,
                                 0,
