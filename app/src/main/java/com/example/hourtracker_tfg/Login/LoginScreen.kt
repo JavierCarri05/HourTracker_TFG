@@ -270,6 +270,5 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int)
         ) {
             Text("Registrar")
         }
-
     }
 }

@@ -1,5 +1,6 @@
 package com.example.hourtracker_tfg.ScreensApp.Sumario
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -130,7 +132,11 @@ fun SumarioScreen(idUsuario: Int, navController: NavController) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
+                                .padding(12.dp)
+                                .clickable {
+                                    val fecha = dia.fecha.replace("/", "-")
+                                    navController.navigate("detalleTurnosScreen/$idUsuario/$fecha")
+                                },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -151,35 +157,47 @@ fun SumarioScreen(idUsuario: Int, navController: NavController) {
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = dia.horas,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = dia.ganancias,
-                                    color = Color(0xFF3B82F7)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(
+                                        text = dia.horas,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = dia.ganancias,
+                                        color = Color(0xFF3B82F7)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    contentDescription = "Editar día",
+                                    tint = Color.White
                                 )
                             }
                         }
                     }
                 }
             }
-
         }
 
-        //Accion para mostrar el BottomShet
-        if (showBottomSheet) {
-            BottomShet(
-                idUsuario = idUsuario,
-                onDismiss = {
-                    showBottomSheet = false
-                    //Aqui recargo los datos si se añade una nueva actividad
-                    jornadasMes = db.jornadasPorMes(idUsuario)
-                    mediaPrecioHora = db.mediaPrecioPorHora(idUsuario)
-                }
-            )
-        }
+    }
+
+    //Accion para mostrar el BottomShet
+    if (showBottomSheet) {
+        BottomShet(
+            idUsuario = idUsuario,
+            onDismiss = {
+                showBottomSheet = false
+                //Aqui recargo los datos si se añade una nueva actividad
+                jornadasMes = db.jornadasPorMes(idUsuario)
+                mediaPrecioHora = db.mediaPrecioPorHora(idUsuario)
+            }
+        )
     }
 }
 
@@ -204,7 +222,7 @@ fun DiaActual(fechaString: String): Boolean {
 }
 
 //Funcion para poner el formato que yo quiero
-fun formatearFecha(fechaString: String): String{
+fun formatearFecha(fechaString: String): String {
     val entrada = SimpleDateFormat("dd/MM/yyyy", Locale("es", "ES"))
     val date = entrada.parse(fechaString)
 
@@ -220,14 +238,14 @@ fun formatearFecha(fechaString: String): String{
         Calendar.SUNDAY to "DOM"
     )
 
-    return if(date != null){
+    return if (date != null) {
         val calendar = Calendar.getInstance()
         calendar.time = date
         val diaNumero = SimpleDateFormat("dd", Locale("es", "ES")).format(date)
         val diaSemana = formatoDias[calendar.get(Calendar.DAY_OF_WEEK)] ?: ""
 
         "$diaNumero $diaSemana"
-    }else{
+    } else {
         fechaString //Si hay alguno error la devuelvo sin formatear
     }
 }

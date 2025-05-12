@@ -15,6 +15,7 @@ import com.example.hourtracker_tfg.ScreensApp.Inicio.HourTrackerScreen
 import com.example.hourtracker_tfg.Login.LoginScreen
 import com.example.hourtracker_tfg.Register.RegisterScreen
 import com.example.hourtracker_tfg.ScreensApp.Ajustes.AjustesScreen
+import com.example.hourtracker_tfg.ScreensApp.DetalleDia.DetalleTurnosScreen
 import com.example.hourtracker_tfg.ScreensApp.Sumario.SumarioScreen
 
 @Composable
@@ -83,5 +84,18 @@ fun NavigationScreens() {
             val idUsuario = backStackEntry.arguments?.getString("idUsuario")?.toInt() ?: 0
             SumarioScreen(idUsuario = idUsuario, navController = navController)
         }
+
+        //Navegacion para el detalleTurnosScreen
+        composable("detalleTurnosScreen/{idUsuario}/{fecha}") { backStackEntry ->
+            val idUsuario = backStackEntry.arguments?.getString("idUsuario")?.toInt() ?: 0
+            // 🔄 Reconvertimos la fecha para que vuelva a tener barras
+            val fecha = backStackEntry.arguments?.getString("fecha")?.replace("-", "/") ?: ""
+            DetalleTurnosScreen(
+                idUsuario = idUsuario,
+                fecha = fecha,
+                navController = navController
+            )
+        }
+
     }
 }

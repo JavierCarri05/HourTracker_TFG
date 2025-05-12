@@ -21,12 +21,12 @@ import java.util.*
 @Composable
 fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
 
-    var currentTime by remember { mutableStateOf(getCurrentTime()) }
-    var currentDay by remember { mutableStateOf(getCurrentDay()) }
-    var currentDayName by remember { mutableStateOf(getDayName()) }
-    var currentMonth by remember { mutableStateOf(getCurrentMonth()) }
-    var currentWeek by remember { mutableStateOf(getCurrentWeek()) }
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var horaActual by remember { mutableStateOf(horaActual()) }
+    var diaActual by remember { mutableStateOf(diaActual()) }
+    var nombreDiaActual by remember { mutableStateOf(nombreDiaActual()) }
+    var meaActual by remember { mutableStateOf(mesActual()) }
+    var anoActual by remember { mutableStateOf(anoActual()) }
+    var isBottomShet by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val db = remember { TurnosDataBaseHelper(context) }
@@ -35,7 +35,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000L)
-            currentTime = getCurrentTime()
+            horaActual = horaActual()
         }
     }
 
@@ -68,7 +68,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = currentTime,
+                text = horaActual,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -77,7 +77,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = currentDay,
+                text = diaActual,
                 fontSize = 16.sp,
                 color = Color.White
             )
@@ -85,7 +85,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { showBottomSheet = true },
+                onClick = { isBottomShet = true },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF3B82F7)
@@ -117,7 +117,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
                             color = Color.White
                         )
                         Text(
-                            text = currentDayName,
+                            text = nombreDiaActual,
                             color = Color.White
                         )
                         Column(horizontalAlignment = Alignment.End) {
@@ -146,7 +146,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
                             color = Color.White
                         )
                         Text(
-                            text = "nº $currentWeek",
+                            text = "nº $anoActual",
                             color = Color.White
                         )
                         Column(horizontalAlignment = Alignment.End) {
@@ -175,7 +175,7 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
                             color = Color.White
                         )
                         Text(
-                            text = currentMonth,
+                            text = meaActual,
                             color = Color.White
                         )
                         Column(horizontalAlignment = Alignment.End) {
@@ -194,11 +194,11 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
             Spacer(modifier = Modifier.weight(0.5f))
         }
 
-        if (showBottomSheet) {
+        if (isBottomShet) {
             BottomShet(
                 idUsuario = idUsuario,
                 onDismiss = {
-                    showBottomSheet = false
+                    isBottomShet = false
                     resumen = db.obtenerResumenTurnos(idUsuario)
                 }
             )
@@ -207,31 +207,31 @@ fun HourTrackerScreen(idUsuario: Int, navController: NavController) {
 }
 
 
-fun getCurrentTime(): String {
+fun horaActual(): String {
     val sdf = SimpleDateFormat("HH:mm:ss", Locale("es", "ES"))
     sdf.timeZone = TimeZone.getTimeZone("Europe/Madrid")
     return sdf.format(Date())
 }
 
-fun getCurrentDay(): String {
+fun diaActual(): String {
     val sdf = SimpleDateFormat("EEEE d 'de' MMMM", Locale("es", "ES"))
     sdf.timeZone = TimeZone.getTimeZone("Europe/Madrid")
     return sdf.format(Date())
 }
 
-fun getDayName(): String {
+fun nombreDiaActual(): String {
     val sdf = SimpleDateFormat("EEEE", Locale("es", "ES"))
     sdf.timeZone = TimeZone.getTimeZone("Europe/Madrid")
     return sdf.format(Date())
 }
 
-fun getCurrentMonth(): String {
+fun mesActual(): String {
     val sdf = SimpleDateFormat("MMMM", Locale("es", "ES"))
     sdf.timeZone = TimeZone.getTimeZone("Europe/Madrid")
     return sdf.format(Date())
 }
 
-fun getCurrentWeek(): String {
+fun anoActual(): String {
     val cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
     cal.firstDayOfWeek = Calendar.MONDAY
     cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)

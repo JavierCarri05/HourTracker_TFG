@@ -194,8 +194,12 @@ class TurnosDataBaseHelper(context: Context) {
 
         //Parseo las fechas
         val pais = Locale("es", "ES")
-        val entrada = SimpleDateFormat("dd/MM/yyyy HH:mm", pais) //Esta variable la utilizo para leer la fecha de la BBDD
-        val mes = SimpleDateFormat("MMMM yyyy", pais) //Variable para formatear la fecha en texto de mes
+        val entrada = SimpleDateFormat(
+            "dd/MM/yyyy HH:mm",
+            pais
+        ) //Esta variable la utilizo para leer la fecha de la BBDD
+        val mes =
+            SimpleDateFormat("MMMM yyyy", pais) //Variable para formatear la fecha en texto de mes
         val dia = SimpleDateFormat("dd/MM/yyyy", pais) //variable para agrupar por dia
 
         //Hago la estructura --> mes -> dia -> lista turnos
@@ -241,7 +245,7 @@ class TurnosDataBaseHelper(context: Context) {
                 /*
                 Aqui lo que hago es crear una entrada para el solo si no existe
                  */
-                if(!mapa.containsKey(mes)){
+                if (!mapa.containsKey(mes)) {
                     mapa[mes] = mutableMapOf()
                 }
 
@@ -250,7 +254,7 @@ class TurnosDataBaseHelper(context: Context) {
                 pero en ese compruebo que ese dia en ese mes tambien existe antes de meterlo a los turnos
                 y la "!!" estas quieren decir que esto no es null porque lo acabo de crear antes
                  */
-                if(!mapa[mes]!!.containsKey(dia)){
+                if (!mapa[mes]!!.containsKey(dia)) {
                     mapa[mes]!![dia] = mutableListOf()
                 }
                 //Meto el turno en la lista correcta, que es el dia correcto del mes correcto
@@ -275,8 +279,9 @@ class TurnosDataBaseHelper(context: Context) {
                 turnos.forEach { turno ->
                     val comienzo = sdf.parse(turno.fechaInicio)
                     val fin = sdf.parse(turno.fechaFin)
-                    if(comienzo != null && fin != null){
-                        val duracion = ((fin.time - comienzo.time) / (1000 * 60)).toInt() - turno.pausa
+                    if (comienzo != null && fin != null) {
+                        val duracion =
+                            ((fin.time - comienzo.time) / (1000 * 60)).toInt() - turno.pausa
                         val hora = duracion / 60.0
                         totalMinutos += duracion
                         totalGanancias += (hora * turno.tarifaHora) + turno.plus
@@ -304,6 +309,129 @@ class TurnosDataBaseHelper(context: Context) {
         val tarifaHora: Double,
         val plus: Double
     )
+
+    //Funcion para obtener los turnos de un dia de trabajo
+    fun obtenerTurnosPorDia(idUsuario: Int, fechaDia: String): List<EditarTurno> {
+        val cursor = db.rawQuery(
+            """
+            SELECT rowid, fecha_inicio, fecha_fin, pausa, tarifa_hora, plus, nota
+            FROM turnos
+            WHERE id_usuario = ? AND fecha_inicio LIKE ?
+            ORDER BY fecha_inicio ASC
+            """.trimIndent(), arrayOf(idUsuario.toString(), "$fechaDia%")
+        )
+
+        val turnos = mutableListOf<EditarTurno>()
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "ES"))
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getInt(0)
+            val inicio = cursor.getString(1)
+            val fin = cursor.getString(2)
+            val pausa = cursor.getInt(3)
+            val tarifa = cursor.getDouble(4)
+            val plus = cursor.getDouble(5)
+            val nota = cursor.getString(6)
+
+            val comienzoJornada = sdf.parse(inicio)
+            val finJornada = sdf.parse(fin)
+
+            val duracion =
+                if (comienzoJornada != null && finJornada != null) {
+                    ((finJornada.time - comienzoJornada.time) / (1000 * 60)).toInt() - pausa
+                } else 0
+
+            val horasString = "${duracion / 60}h ${duracion % 60}m"
+            val ganancia = ((duracion / 60.0) * tarifa) + plus
+            val ganaciaString = String.format("%.2f €", ganancia)
+
+            turnos.add(
+                EditarTurno(
+                    idTurno = id,
+                    fechaInicio = inicio,
+                    fechaFin = fin,
+                    pausa = pausa,
+                    tarifaHora = tarifa,
+                    plus = plus,
+                    nota = nota,
+                    horas = horasString,
+                    ganancia = ganaciaString
+                )
+            )
+        }
+        cursor.close()
+        return turnos
+    }
+
+    data class EditarTurno(
+        val idTurno: Int,
+        val fechaInicio: String,
+        val fechaFin: String,
+        val pausa: Int,
+        val tarifaHora: Double,
+        val plus: Double,
+        val nota: String,
+        val horas: String,
+        val ganancia: String
+    )
+
+    //Funcion para actualizar los turnos si los edito
+    fun actualizarTurno(
+        idTurno: Int,
+        fechaInicio: String,
+        fechaFin: String,
+        pausa: Int,
+        tarifaHora: Double,
+        plus: Double,
+        nota: String
+    ) {
+        val consulta = """
+            UPDATE turnos
+            SET fecha_inicio = ?, fecha_fin = ?, pausa = ?, tarifa_hora = ?, plus = ?, nota = ?
+            WHERE id = ?
+        """.trimIndent()
+
+        val stmt = db.compileStatement(consulta)
+        stmt.bindString(1, fechaInicio)
+        stmt.bindString(2, fechaFin)
+        stmt.bindLong(3, pausa.toLong())
+        stmt.bindDouble(4, tarifaHora)
+        stmt.bindDouble(5, plus)
+        stmt.bindString(6, nota)
+        stmt.bindLong(7, idTurno.toLong())
+        stmt.executeUpdateDelete()
+    }
+
+    //Funcion para elimiar un turno
+    fun eliminarTurno(idTurno: Int) {
+        db.delete("turnos", "id = ?", arrayOf(idTurno.toString()))
+    }
+
+    /*
+    Esta funcion es para validar antes de actualizar un turno
+    ya que si se da el caso que me modifican un turno de un dia y lo modifican con las mismas fechas de otro turno
+     */
+
+    fun existeTurno(idUsuario: Int, fechaInicio: String, fechaFin: String, idTurno: Int): Boolean {
+        val consulta =
+            """
+            SELECT COUNT(*) FROM turnos
+            WHERE id_usuario = ? AND id != ? 
+            AND ((fecha_inicio <= ? AND fecha_fin > ?) OR (fecha_inicio < ? AND fecha_fin >= ?))
+            """.trimIndent()
+
+        val cursor = db.rawQuery(consulta, arrayOf(idUsuario.toString(), idTurno.toString(),
+            fechaFin, fechaInicio, fechaInicio, fechaFin
+        ))
+
+        var hayTurno = false
+
+        if(cursor.moveToFirst()){
+            hayTurno = cursor.getInt(0) > 0
+        }
+        cursor.close()
+        return hayTurno
+    }
 
     // Funcion que compara si dos fechas son del mismo día
     private fun mismoDia(date1: Date, date2: Date): Boolean {
