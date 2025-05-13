@@ -39,14 +39,28 @@ class BddHourTracker (context: Context) : SQLiteOpenHelper(context, NOMBRE_BDD, 
 
     val BORRAR_TABLA_TURNOS = BORRAR_TABLA + TABLA_TURNOS
 
+    //Tabla Eventos
+    val TABLA_EVENTOS: String = "eventos"
+    val CREAR_TABLA_EVENTOS = CREAR_TABLA + TABLA_EVENTOS +
+            """(id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_usuario INTEGER,
+            fecha_evento DATETIME NOT NULL,
+            descripcion TEXT,
+            FOREIGN KEY(id_usuario) REFERENCES usuarios(id));"""
+
+    val BORRAR_TABLA_EVENTOS = BORRAR_TABLA + TABLA_EVENTOS
+
+
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(CREAR_TABLA_USUARIOS) //Creo la tabla
         db.execSQL(CREAR_TABLA_TURNOS)
+        db.execSQL(CREAR_TABLA_EVENTOS)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL(BORRAR_TABLA_USUARIOS) //Borro la tabla
         db.execSQL(BORRAR_TABLA_TURNOS)
+        db.execSQL(BORRAR_TABLA_EVENTOS)
         onCreate(db)
     }
 }

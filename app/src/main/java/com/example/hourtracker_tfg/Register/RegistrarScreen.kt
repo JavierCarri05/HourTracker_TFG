@@ -55,13 +55,13 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int)
     }
 
     //funcion para validar que el gmail acabe en @gmail.com
-    fun validarGmail(): Boolean{
-        return gmail.endsWith("@gmail.com")
+    fun validarEmail(): Boolean {
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}\$")
+        return gmail.matches(emailRegex)
     }
-
     //funcion para validar el nombre de usuario o el correo ya existen y tambien que las contraseña coinciden
     fun validarUsuario(){
-        gmailError = !validarGmail() || registrarDBH.existeGmail(gmail)
+        gmailError = !validarEmail() || registrarDBH.existeGmail(gmail)
         nombreUsuarioError = registrarDBH.existeNombreUsuario(nombreUsuario)
         contrasenaError = contrasena != repetirContrasena
         contrasenaError = !validarContrasena()
@@ -83,7 +83,7 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int)
         OutlinedTextField(
             value = gmail,
             onValueChange = { gmail = it},
-            label = { Text("Gmail") },
+            label = { Text("Email") },
             isError =  gmailError,
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -96,7 +96,7 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int)
 
         if(gmailError){
             Text(
-                text = "Este correo ya esta registrado o no es valido (debe terminar en @gmail.com)",
+                text = "Este correo ya esta registrado o no es valido",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )

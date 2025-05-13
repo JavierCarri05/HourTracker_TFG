@@ -10,6 +10,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.hourtracker_tfg.R
+import kotlinx.coroutines.selects.select
 
 /**
  * Este Composable es el menú inferior reutilizable.
@@ -59,8 +60,12 @@ fun BarraNavegacion(
         )
         // Ajustes
         NavigationBarItem(
-            selected = false,
-            onClick = { navController.navigate("ajustesScreen/$idUsuario") },
+            selected = selectedItem == "Ajustes",
+            onClick = {
+                if(selectedItem != "Ajustes" ){
+                    navController.navigate("ajustesScreen/$idUsuario")
+                }
+            },
             icon = { Icon(Icons.Default.Settings, contentDescription = "Ajustes") },
             label = { Text("Ajustes") }
         )
