@@ -36,8 +36,8 @@ fun NavigationScreens() {
         }
     }
 
-    NavHost(navController = navController, startDestination = Login) { // Ruta inicial: Login
-        composable<Login> {
+    NavHost(navController = navController, startDestination = "login") { // Ruta inicial: Login
+        composable("login") {
             LoginScreen(
                 navigateToRegister = { navController.navigate("register") }, // Navegar a register
                 navigateToHomeHourTracker = { id ->
@@ -88,7 +88,6 @@ fun NavigationScreens() {
         //Navegacion para el detalleTurnosScreen
         composable("detalleTurnosScreen/{idUsuario}/{fecha}") { backStackEntry ->
             val idUsuario = backStackEntry.arguments?.getString("idUsuario")?.toInt() ?: 0
-            // 🔄 Reconvertimos la fecha para que vuelva a tener barras
             val fecha = backStackEntry.arguments?.getString("fecha")?.replace("-", "/") ?: ""
             DetalleTurnosScreen(
                 idUsuario = idUsuario,
