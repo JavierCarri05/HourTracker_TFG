@@ -68,10 +68,10 @@ fun HourTracker_TFGTheme(
     content: @Composable () -> Unit
 ) {
     val darkColorScheme = darkColorScheme(
-        primary = Color(0xFFBB86FC),
+        primary = Color(0xFF3B82F7),
         secondary = Color(0xFF03DAC5),
-        background = Color(0xFF121212), // 👈 fondo oscuro
-        surface = Color(0xFF121212),    // 👈 también surface oscuro
+        background = Color(0xFF121212),
+        surface = Color(0xFF121212),
         onPrimary = Color.White,
         onSecondary = Color.White,
         onBackground = Color.White,

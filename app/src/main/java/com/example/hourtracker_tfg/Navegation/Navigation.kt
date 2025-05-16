@@ -1,5 +1,7 @@
 package com.example.hourtracker_tfg.Navegation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,11 +15,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.hourtracker_tfg.BDD.SessionManager
 import com.example.hourtracker_tfg.ScreensApp.Inicio.HourTrackerScreen
 import com.example.hourtracker_tfg.Login.LoginScreen
-import com.example.hourtracker_tfg.Register.RegisterScreen
+import com.example.hourtracker_tfg.Registro.registroScreen
 import com.example.hourtracker_tfg.ScreensApp.Ajustes.AjustesScreen
-import com.example.hourtracker_tfg.ScreensApp.DetalleDia.DetalleTurnosScreen
+import com.example.hourtracker_tfg.ScreensApp.Eventos.eventosScreen
+import com.example.hourtracker_tfg.ScreensApp.Sumario.DetalleDia.DetalleTurnosScreen
 import com.example.hourtracker_tfg.ScreensApp.Sumario.SumarioScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationScreens() {
     val navController = rememberNavController()
@@ -39,18 +43,18 @@ fun NavigationScreens() {
     NavHost(navController = navController, startDestination = "login") { // Ruta inicial: Login
         composable("login") {
             LoginScreen(
-                navigateToRegister = { navController.navigate("register") }, // Navegar a register
-                navigateToHomeHourTracker = { id ->
+                navigateToRegistro = { navController.navigate("registro") }, // Navegar al registro
+                navigateToInicio = { id ->
                     idUsuario = id // Guardar el id del usuario
                     navController.navigate("hourTrackerScreen/$idUsuario") // Navegar a la pantalla principal con el ID
                 }
             )
         }
 
-        composable("register") {
-            RegisterScreen(
+        composable("registro") {
+            registroScreen(
                 navigateToLogin = { navController.navigate("login") }, // Navegar a login
-                navigateToHomeHourTracker = { id ->
+                navigateToInicio = { id ->
                     idUsuario = id // Guardar el id del usuario
                     navController.navigate("hourTrackerScreen/$idUsuario") // Navegar a la pantalla principal con el ID
                 }
@@ -66,18 +70,6 @@ fun NavigationScreens() {
             )
         }
 
-        composable("ajustesScreen/{id}") { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")?.toInt() ?: 0
-            AjustesScreen(
-                idUsuario = id,
-                onCerrarSesion = {
-                    navController.navigate("login") {
-                        popUpTo("hourTrackerScreen/{id}") { inclusive = true }
-                    }
-                },
-                navController = navController
-            )
-        }
 
         //Navegacion hacia el sumario Screen
         composable("sumarioScreen/{idUsuario}"){ backStackEntry ->
@@ -92,6 +84,29 @@ fun NavigationScreens() {
             DetalleTurnosScreen(
                 idUsuario = idUsuario,
                 fecha = fecha,
+                navController = navController
+            )
+        }
+
+        //navegacion a eventosScreen
+        composable("eventosScreen/{idUsuario}"){ backStackEntry ->
+            val idUsuario = backStackEntry.arguments?.getString("idUsuario")?.toInt() ?: 0
+            eventosScreen(idUsuario = idUsuario, navController = navController)
+        }
+
+        /*
+        Navegacion a los ajustes
+        y si pulso el boton de cerra sesion me envia al loginScreen
+         */
+        composable("ajustesScreen/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toInt() ?: 0
+            AjustesScreen(
+                idUsuario = id,
+                onCerrarSesion = {
+                    navController.navigate("login") {
+                        popUpTo("hourTrackerScreen/{id}") { inclusive = true }
+                    }
+                },
                 navController = navController
             )
         }

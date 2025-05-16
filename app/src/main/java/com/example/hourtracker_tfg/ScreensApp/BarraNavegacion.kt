@@ -47,16 +47,16 @@ fun BarraNavegacion(
             icon = { Icon(painter = icon, contentDescription = "Sumario") },
             label = { Text("Sumario") }
         )
-        // Gestionar
+        // Eventos
         NavigationBarItem(
-            selected = selectedItem == "Gestionar",
+            selected = selectedItem == "Eventos",
             onClick = {
-                if (selectedItem != "Gestionar") {
-                    navController.navigate("gestionarScreen/$idUsuario")
+                if (selectedItem != "Eventos") {
+                    navController.navigate("eventosScreen/$idUsuario")
                 }
             },
-            icon = { Icon(Icons.Default.DateRange, contentDescription = "Gestionar") },
-            label = { Text("Gestionar") }
+            icon = { Icon(Icons.Default.DateRange, contentDescription = "Eventos") },
+            label = { Text("Eventos") }
         )
         // Ajustes
         NavigationBarItem(

@@ -1,12 +1,10 @@
-package com.example.hourtracker_tfg.Register
+package com.example.hourtracker_tfg.Registro
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
-import com.example.hourtracker_tfg.BDD.BddHourTracker
 
-class RegistrarDateBaseHelper (context: Context) {
+class RegistroDateBaseHelper (context: Context) {
 
     private val db = DatabaseManager.getInstance(context).getDatabase()
 

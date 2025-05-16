@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.hourtracker_tfg.BDD.SessionManager
+import com.example.hourtracker_tfg.BDD.EventosDataBaseHelper
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import com.example.hourtracker_tfg.Login.LoginDateBaseHelper
 import com.example.hourtracker_tfg.R

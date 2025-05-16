@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.Register
+package com.example.hourtracker_tfg.Registro
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -20,9 +20,9 @@ import com.example.hourtracker_tfg.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int) -> Unit){
+fun registroScreen(navigateToLogin: () -> Unit, navigateToInicio: (Int) -> Unit){
     val context = LocalContext.current
-    val registrarDBH = RegistrarDateBaseHelper(context) //Llamo al DateBaseHelper de register
+    val registrarDBH = RegistroDateBaseHelper(context) //Llamo al DateBaseHelper de register
     val sessionManager = SessionManager(context) // para guardar la sesion
 
     var gmail by rememberSaveable { mutableStateOf("") }
@@ -195,7 +195,7 @@ fun RegisterScreen(navigateToLogin: () -> Unit, navigateToHomeHourTracker: (Int)
                     val idUsuario = registrarDBH.obtenerIdUsuario(nombreUsuario)//Obtengo el id del usuario para trabajar sobre ese usuario
                     sessionManager.guardarIdUsuario(idUsuario) //Guardo la sesion
                     Toast.makeText(context, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
-                    navigateToHomeHourTracker(idUsuario)
+                    navigateToInicio(idUsuario)
                 }
             },
             modifier = Modifier.fillMaxWidth(),

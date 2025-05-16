@@ -20,7 +20,7 @@ import com.example.hourtracker_tfg.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int) -> Unit) {
+fun LoginScreen(navigateToRegistro: () -> Unit, navigateToInicio: (Int) -> Unit) {
     val context = LocalContext.current
     val loginDBH = LoginDateBaseHelper(context)
 
@@ -129,7 +129,7 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int)
                     val idUsuario = loginDBH.obtenerIdUsuario(username)
                     sessionManager.guardarIdUsuario(idUsuario) //Aqui guardo la sesion del usuario
                     Toast.makeText(context, "Iniciando sesión...", Toast.LENGTH_SHORT).show()
-                    navigateToHomeHourTracker(idUsuario)
+                    navigateToInicio(idUsuario)
                 } else {
                     errorMessage = "Usuario o contraseña incorrectos"
                 }
@@ -262,7 +262,7 @@ fun LoginScreen(navigateToRegister: () -> Unit, navigateToHomeHourTracker: (Int)
 
         // Ir al formulario de registro
         Button(
-            onClick = { navigateToRegister() },
+            onClick = { navigateToRegistro() },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF3B82F7)

@@ -52,7 +52,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
     implementation(libs.androidx.appcompat)
 
     //Implementacion para la navegación
@@ -61,6 +60,14 @@ dependencies {
     val nav_version = "2.8.9"
     implementation("androidx.navigation:navigation-compose:$nav_version")
     //******************
+
+    //Implementacion para el calendario
+    implementation("com.kizitonwose.calendar:compose:2.2.0")
+
+    //Imoplemetacion para tener acceso al java.time
+    implementation("com.jakewharton.threetenabp:threetenabp:1.4.5")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
