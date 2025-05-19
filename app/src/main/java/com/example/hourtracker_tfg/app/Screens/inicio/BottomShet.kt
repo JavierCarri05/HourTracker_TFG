@@ -416,14 +416,14 @@ fun BottomShet(
                     OutlinedTextField(
                         value = ganancias,
                         onValueChange = { valor ->
-                            //Con esto es que solo permita meter dos decimales
+                            // Solo permitir números decimales con máximo 2 decimales
                             if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
                                 ganancias = valor
                             }
                         },
-                        label = { Text("Ganacias", color = Color.White) },
+                        label = { Text("Ganancias", color = Color.White) },
                         modifier = Modifier.fillMaxWidth(),
-                        //Y esto es para el teclado numerico
+                        readOnly = true,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Done

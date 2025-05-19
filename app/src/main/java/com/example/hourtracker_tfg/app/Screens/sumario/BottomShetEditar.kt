@@ -355,6 +355,7 @@ fun BottomShetEditar(
                         },
                         label = { Text("Ganancias", color = Color.White) },
                         modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Done
