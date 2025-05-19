@@ -1,8 +1,9 @@
-package com.example.hourtracker_tfg.BDD
+package com.example.hourtracker_tfg.app.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+
 //Para crear la bdd esta tiene que extender de SQLiteOpenHelper
 class BddHourTracker (context: Context) : SQLiteOpenHelper(context, NOMBRE_BDD, null, VERSION_BDD) {
     //Aqui defino el nombre y la version de la bdd

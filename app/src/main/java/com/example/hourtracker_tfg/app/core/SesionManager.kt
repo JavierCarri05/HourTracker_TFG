@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.BDD
+package com.example.hourtracker_tfg.app.core
 
 import android.content.Context
 import android.content.SharedPreferences

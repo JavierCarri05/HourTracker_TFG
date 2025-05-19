@@ -1,6 +1,8 @@
+package com.example.hourtracker_tfg.app.data
+
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import com.example.hourtracker_tfg.BDD.BddHourTracker
+import com.example.hourtracker_tfg.app.data.BddHourTracker
 
 class DatabaseManager private constructor(context: Context) {
     private val dbHelper = BddHourTracker(context)

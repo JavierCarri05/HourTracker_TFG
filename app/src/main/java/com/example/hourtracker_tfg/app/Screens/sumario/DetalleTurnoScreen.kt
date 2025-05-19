@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.ScreensApp.Sumario.DetalleDia
+package com.example.hourtracker_tfg.app.Screens.sumario
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper.EditarTurno
-import com.example.hourtracker_tfg.ScreensApp.BarraNavegacion
-import com.example.hourtracker_tfg.ScreensApp.Inicio.BottomShet
+import com.example.hourtracker_tfg.app.Screens.components.BarraNavegacion
+import com.example.hourtracker_tfg.app.Screens.inicio.BottomShet
 
 @Composable
 fun DetalleTurnosScreen(

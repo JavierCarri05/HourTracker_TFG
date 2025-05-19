@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.ScreensApp
+package com.example.hourtracker_tfg.app.Screens.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -8,9 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.example.hourtracker_tfg.R
-import kotlinx.coroutines.selects.select
 
 /**
  * Este Composable es el menú inferior reutilizable.

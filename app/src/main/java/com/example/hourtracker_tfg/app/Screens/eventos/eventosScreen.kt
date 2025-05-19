@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.ScreensApp.Eventos
+package com.example.hourtracker_tfg.app.Screens.eventos
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -36,12 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.hourtracker_tfg.ScreensApp.BarraNavegacion
+import com.example.hourtracker_tfg.app.Screens.components.BarraNavegacion
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -57,6 +58,11 @@ fun eventosScreen(idUsuario: Int, navController: NavController){
     val hoy = remember { LocalDate.now() } //Esta variable es para coger la decha actual del dispositivo
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }//Guardo el mes actual
     var diaSeleccionado by remember { mutableStateOf(hoy) } //Guarda el dia que ha seleccionado el usuario
+
+    //Variable para añadir un evento
+    val context = LocalContext.current
+    var dialog by remember { mutableStateOf(false) }
+    var descripcionEvento by remember { mutableStateOf("") }
 
     Scaffold(
         bottomBar = {

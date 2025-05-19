@@ -1,7 +1,8 @@
 package com.example.hourtracker_tfg.BDD
 
 import android.content.Context
-import com.example.hourtracker_tfg.ScreensApp.Sumario.DiaTrabajo
+import com.example.hourtracker_tfg.app.Screens.sumario.DiaTrabajo
+import com.example.hourtracker_tfg.app.data.DatabaseManager
 import java.text.SimpleDateFormat
 import java.util.*
 

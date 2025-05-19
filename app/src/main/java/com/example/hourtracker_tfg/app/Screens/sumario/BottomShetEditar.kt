@@ -1,72 +1,76 @@
-package com.example.hourtracker_tfg.ScreensApp.Inicio
+package com.example.hourtracker_tfg.app.Screens.sumario
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.launch
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
+import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper.EditarTurno
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomShet(
+fun BottomShetEditar(
     idUsuario: Int,
-    fechaSeleccionada: String? = null,
+    turno: EditarTurno,
     onDismiss: () -> Unit
-) { //Le paso el id del usuario para trabajar con el
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    val scope = rememberCoroutineScope()
+) {
     val context = LocalContext.current
-
-    //Variables para almacenar las fechas y horas
-    var comienzo by remember { mutableStateOf("") }
-    var fin by remember { mutableStateOf("") }
-    var pausa by remember { mutableStateOf("0h 00m") }
-
-    // variables para las ganancias
-    var tarifaPorHora by remember { mutableStateOf("") }
-    var plus by remember { mutableStateOf("") }
-    var ganancias by remember { mutableStateOf("") }
-
-    // variable para nota
-    var nota by remember { mutableStateOf("") }
-
-    //Variable de la base de datos
     val bdd = TurnosDataBaseHelper(context)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
-    //Esta variable es para recuperar recuperar la fecha que ha seleccionado el usuario para añadir el comienzo de la jornada
-    val calendarioSeleccionada = Calendar.getInstance(TimeZone.getTimeZone("Europa/Madrid"))
-    var fechaComienzo by remember { mutableStateOf<Calendar?>(null) }
-    var fechaFin by remember { mutableStateOf<Calendar?>(null) }
+    var comienzo by remember { mutableStateOf(turno.fechaInicio) }
+    var fin by remember { mutableStateOf(turno.fechaFin) }
+    var pausa by remember { mutableStateOf("${turno.pausa / 60}h ${turno.pausa % 60}m") }
+    var tarifaPorHora by remember { mutableStateOf(String.format("%.2f", turno.tarifaHora)) }
 
+    /*
+    if(turno.plus == 0.0) "" else String.format("%.2f", turno.plus))
+    esto si cuando edito un turno que no tiene plus
+    pues que me lo muestre vacio y no 0.00
+     */
+    var plus by remember { mutableStateOf(if(turno.plus == 0.0) "" else String.format("%.2f", turno.plus)) }
+    var nota by remember { mutableStateOf(turno.nota) }
+    var ganancias by remember { mutableStateOf(turno.ganancia) }
 
-    // Mostrar la sheet directamente cuando se monta
+    val calendarioSeleccionada = Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
+    var fechaComienzo by remember {
+        mutableStateOf(
+            Calendar.getInstance().apply {
+                time = SimpleDateFormat(
+                    "dd/MM/yyyy HH:mm",
+                    Locale("es", "ES")
+                ).parse(turno.fechaInicio) ?: Date()
+            })
+    }
+    var fechaFin by remember {
+        mutableStateOf(
+            Calendar.getInstance().apply {
+                time =
+                    SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "ES")).parse(turno.fechaFin)
+                        ?: Date()
+            })
+    }
+
+    //Esta variable es para que se pueda hacer scroll en el BottomShet
+    val scrollState = rememberScrollState()
+
     LaunchedEffect(Unit) {
         scope.launch { sheetState.show() }
     }
@@ -77,11 +81,13 @@ fun BottomShet(
         containerColor = Color(0xFF121212)
     ) {
         Column(
-            modifier = Modifier
+            Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .padding(bottom = 32.dp)
+                .verticalScroll(scrollState)
         ) {
-            // Encabezado
+            // ENCABEZADO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -102,7 +108,7 @@ fun BottomShet(
                 }
 
                 Text(
-                    text = "Entrada",
+                    text = "Editar",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge
@@ -110,56 +116,49 @@ fun BottomShet(
 
                 TextButton(
                     onClick = {
-                        if (comienzo.isNotEmpty() && fin.isNotEmpty()) {
-                            val isTurno = bdd.existeTurno(idUsuario, comienzo, fin, -1)
-                            if (isTurno) {
-                                Toast.makeText(context, "Ya existe un turno en ese horario", Toast.LENGTH_SHORT).show()
-                                return@TextButton //Esto es para que no me deje guardar si se va a repetir un turno
-                            }
+                        //Esta variable es para comprobar si cuando edito un turno y pongo la fecha de otro que ya existe que no me deje, ya que asi no hay turnos duplicados
+                        val isTurno = bdd.existeTurno(idUsuario, comienzo, fin, turno.idTurno)
 
-                            // Convertir fechas a objetos Date para comparar
-                            val sdfFull = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "ES"))
-                            val fechaInicio = sdfFull.parse(comienzo)
-                            val fechaFin = sdfFull.parse(fin)
-
-                            if (fechaInicio == null || fechaFin == null || fechaFin.before(fechaInicio)) {
-                                Toast.makeText(context, "La fecha de fin debe ser posterior a la de inicio", Toast.LENGTH_LONG).show()
-                                return@TextButton
-                            }
-                                val pausaInt = try {
-                                    val parts = pausa.split("h", "m").map { it.trim() }
-                                    val horas = parts[0].toIntOrNull() ?: 0
-                                    val minutos = parts[1].toIntOrNull() ?: 0
-                                    (horas * 60) + minutos
-                                } catch (e: Exception) {
-                                    0
-                                }
-
-                                val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
-                                val plusVal = plus.toDoubleOrNull() ?: 0.0
-
-                                bdd.insertarTurno(
-                                    idUsuario = idUsuario,
-                                    fechaInicio = comienzo,
-                                    fechaFin = fin,
-                                    pausa = pausaInt,
-                                    tarifaHora = tarifa,
-                                    plus = plusVal,
-                                    nota = nota
-                                )
-
-                                scope.launch {
-                                    sheetState.hide()
-                                    onDismiss()
-                                }
-                        } else {
-                            // Campos obligatorios no completados
-                            Toast.makeText(
-                                context,
-                                "Debes seleccionar las fechas de inicio y fin",
-                                Toast.LENGTH_LONG
-                            ).show()
+                        if (isTurno) {
+                            Toast.makeText(context, "Ya existe un turno en ese horario", Toast.LENGTH_SHORT).show()
+                            return@TextButton //Esto es para que no me deje
                         }
+
+                        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "ES"))
+                        val fechaInicio = sdf.parse(comienzo)
+                        val fechaFinal = sdf.parse(fin)
+
+                        if (fechaInicio == null || fechaFin == null || fechaFin.before(fechaInicio)) {
+                            Toast.makeText(context, "La fecha de fin debe ser posterior a la de inicio", Toast.LENGTH_LONG).show()
+                            return@TextButton
+                        }
+
+                            val pausaInt = try {
+                                val parts = pausa.split("h", "m").map { it.trim() }
+                                val h = parts[0].toIntOrNull() ?: 0
+                                val m = parts[1].toIntOrNull() ?: 0
+                                (h * 60) + m
+                            } catch (e: Exception) {
+                                0
+                            }
+
+                            val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
+                            val plusVal = plus.toDoubleOrNull() ?: 0.0
+
+                            bdd.actualizarTurno(
+                                idTurno = turno.idTurno,
+                                fechaInicio = comienzo,
+                                fechaFin = fin,
+                                pausa = pausaInt,
+                                tarifaHora = tarifa,
+                                plus = plusVal,
+                                nota = nota
+                            )
+
+                            scope.launch {
+                                sheetState.hide()
+                                onDismiss()
+                            }
                     },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = Color(0xFF3B82F7)
@@ -187,7 +186,7 @@ fun BottomShet(
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // Comienzo
+                    // COMIENZO
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -195,25 +194,7 @@ fun BottomShet(
                     ) {
                         Text("Comienzo", color = Color.White)
                         TextButton(onClick = {
-                            var calendario =
-                                Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
-                            if (!fechaSeleccionada.isNullOrEmpty()) {
-                                try {
-                                    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale("es", "ES"))
-                                    val date = sdf.parse(fechaSeleccionada)
-                                    val hora =
-                                        Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
-                                    if (date != null) {
-                                        calendario.time = date
-                                        calendario.set(
-                                            Calendar.HOUR_OF_DAY,
-                                            hora.get(Calendar.HOUR_OF_DAY)
-                                        )
-                                        calendario.set(Calendar.MINUTE, hora.get(Calendar.MINUTE))
-                                    }
-                                } catch (_: Exception) {
-                                }
-                            }
+                            val calendario = fechaComienzo
                             DatePickerDialog(
                                 context,
                                 { _, ano, mes, dia ->
@@ -224,15 +205,8 @@ fun BottomShet(
                                                 "%02d/%02d/%d %02d:%02d",
                                                 dia, mes + 1, ano, hora, minuto
                                             )
-                                            /*
-                                            La siguiente variable es para que si yo en el comienzo añado
-                                            una fecha que no es la actual, pues cuando añado el fin
-                                            me marca el dia actual, entonces con la esta variable
-                                            lo que voy a conseguir es que si yo selecciono un dia que no es
-                                            el actual me lo guarda y lo recupera en fin y asi le facilitamos la vida al usuario
-                                             */
-                                            calendarioSeleccionada.set(ano, mes, dia, hora, minuto)
-                                            fechaComienzo = calendarioSeleccionada
+                                            calendario.set(ano, mes, dia, hora, minuto)
+                                            fechaComienzo = calendario
                                         },
                                         calendario.get(Calendar.HOUR_OF_DAY),
                                         calendario.get(Calendar.MINUTE),
@@ -244,15 +218,12 @@ fun BottomShet(
                                 calendario.get(Calendar.DAY_OF_MONTH)
                             ).show()
                         }) {
-                            Text(
-                                text = if (comienzo.isEmpty()) "Seleccionar" else comienzo,
-                                color = Color(0xFF3B82F7)
-                            )
+                            Text(comienzo, color = Color(0xFF3B82F7))
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Fin
+                    // FIN
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -260,15 +231,7 @@ fun BottomShet(
                     ) {
                         Text("Fin", color = Color.White)
                         TextButton(onClick = {
-                            //Si la fechaComienzo no es null pues le asigno la fecha de comienzo al calendario
-                            //Pero si es null le asigno la fecha actual
-                            val calendario: Calendar
-                            if (fechaComienzo != null) {
-                                calendario = fechaComienzo!!
-                            } else {
-                                calendario =
-                                    Calendar.getInstance(TimeZone.getTimeZone("Europe/Madrid"))
-                            }
+                            val calendario = fechaComienzo
                             DatePickerDialog(
                                 context,
                                 { _, ano, mes, dia ->
@@ -276,20 +239,11 @@ fun BottomShet(
                                         context,
                                         { _, hora, minuto ->
                                             fin = String.format(
-                                                "%02d/%02d/%d %02d:%02d", //Este formato lo pasa a dd/MM/yyyy
+                                                "%02d/%02d/%d %02d:%02d",
                                                 dia, mes + 1, ano, hora, minuto
-                                                /*
-                                                Ejemplo:
-                                                dia = 16, mes = 05, año = 2025, hora = 10, minuto = 30,
-                                                el mes + 1 es porque
-                                                en android cuando uso el Calendar.get(Calendar.MONTH)
-                                                por defecto devuleve valores de 0 al 11, entonces seria 0 = Enero, 1 = Febrero...
-                                                y le sumo uno para sea 1 = Enero, Febrero = 2...
-
-                                                 */
                                             )
-                                            calendarioSeleccionada.set(ano, mes, dia, hora, minuto)
-                                            fechaFin = calendarioSeleccionada
+                                            calendario.set(ano, mes, dia, hora, minuto)
+                                            fechaFin = calendario
                                         },
                                         calendario.get(Calendar.HOUR_OF_DAY),
                                         calendario.get(Calendar.MINUTE),
@@ -301,15 +255,13 @@ fun BottomShet(
                                 calendario.get(Calendar.DAY_OF_MONTH)
                             ).show()
                         }) {
-                            Text(
-                                text = if (fin.isEmpty()) "Seleccionar" else fin,
-                                color = Color(0xFF3B82F7)
-                            )
+                            Text(fin, color = Color(0xFF3B82F7))
                         }
                     }
+
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Pausa
+                    // PAUSA
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -317,35 +269,17 @@ fun BottomShet(
                     ) {
                         Text("Pausa", color = Color.White)
                         TextButton(onClick = {
-                            /*
-                            la _ la pongo para no utilizar el dialog
-                            ya que es el primero parametro y como no lo necestio
-                            lo susituyo por un _ y eso es un place-holder cuando hay un parametro que no te interesa
-
-                            la hora (es la hora seleccionada con el fomrato de 24 horas)
-                             y el minuto (es el minuto seleccionado)
-                             */
-                            TimePickerDialog(
-                                context,
-                                { _, hora, minuto ->
-                                    //Lo formato para que sea asi. Ejemploo 8h 30m
-                                    pausa = "${hora}h ${String.format("%02d", minuto)}m"
-                                },
-                                0, //Este 0 es la hora inical que se muestra
-                                0, //Y este el minuto inicial que se muestra
-                                true //Si es true usa un formato de 24h y si es false usa AM/PM
-                            ).show()
+                            TimePickerDialog(context, { _, hora, minuto ->
+                                pausa = "${hora}h ${String.format("%02d", minuto)}m"
+                            }, 0, 0, true).show()
                         }) {
-                            Text(
-                                text = pausa,
-                                color = Color(0xFF3B82F7)
-                            )
+                            Text(pausa, color = Color(0xFF3B82F7))
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
             // GANANCIAS
             Text(
@@ -362,18 +296,17 @@ fun BottomShet(
                     containerColor = Color(0xFF1C1C1E)
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(Modifier.padding(16.dp)) {
                     OutlinedTextField(
                         value = tarifaPorHora,
                         onValueChange = { valor ->
-                            //Con esto es que solo permita meter dos decimales
+                            // Solo permitir números decimales con máximo 2 decimales
                             if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
                                 tarifaPorHora = valor
                             }
                         },
                         label = { Text("Tarifa por hora", color = Color.White) },
                         modifier = Modifier.fillMaxWidth(),
-                        //Y esto es para el teclado numerico
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Done
@@ -387,17 +320,16 @@ fun BottomShet(
                             unfocusedBorderColor = Color(0xFF3B82F7)
                         )
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = plus,
                         onValueChange = { valor ->
-                            //Con esto es que solo permita meter dos decimales
+                            // Solo permitir números decimales con máximo 2 decimales
                             if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
                                 plus = valor
                             }
                         },
                         label = { Text("Plus", color = Color.White) },
-                        //Y esto es para el teclado numerico
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal,
@@ -412,18 +344,17 @@ fun BottomShet(
                             unfocusedBorderColor = Color(0xFF3B82F7)
                         )
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = ganancias,
                         onValueChange = { valor ->
-                            //Con esto es que solo permita meter dos decimales
+                            // Solo permitir números decimales con máximo 2 decimales
                             if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
                                 ganancias = valor
                             }
                         },
-                        label = { Text("Ganacias", color = Color.White) },
+                        label = { Text("Ganancias", color = Color.White) },
                         modifier = Modifier.fillMaxWidth(),
-                        //Y esto es para el teclado numerico
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Done
@@ -440,7 +371,7 @@ fun BottomShet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
             // NOTA
             Text(
@@ -475,7 +406,20 @@ fun BottomShet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // BOTÓN ELIMINAR
+            Button(
+                onClick = {
+                    bdd.eliminarTurno(turno.idTurno)
+                    scope.launch {
+                        sheetState.hide()
+                        onDismiss()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            ) {
+                Text("Eliminar Turno", color = Color.White)
+            }
         }
     }
 }

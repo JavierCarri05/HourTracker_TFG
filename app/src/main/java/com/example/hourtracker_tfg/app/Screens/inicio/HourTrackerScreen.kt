@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.ScreensApp.Inicio
+package com.example.hourtracker_tfg.app.Screens.inicio
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
-import com.example.hourtracker_tfg.ScreensApp.BarraNavegacion
+import com.example.hourtracker_tfg.app.Screens.components.BarraNavegacion
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*

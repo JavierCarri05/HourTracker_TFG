@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.ScreensApp.Ajustes
+package com.example.hourtracker_tfg.app.Screens.ajustes
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -16,12 +16,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.hourtracker_tfg.BDD.SessionManager
-import com.example.hourtracker_tfg.BDD.EventosDataBaseHelper
+import com.example.hourtracker_tfg.app.core.SessionManager
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
-import com.example.hourtracker_tfg.Login.LoginDateBaseHelper
+import com.example.hourtracker_tfg.app.data.helpers.LoginDateBaseHelper
 import com.example.hourtracker_tfg.R
-import com.example.hourtracker_tfg.ScreensApp.BarraNavegacion
+import com.example.hourtracker_tfg.app.Screens.components.BarraNavegacion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

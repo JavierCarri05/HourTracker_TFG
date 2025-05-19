@@ -1,11 +1,11 @@
-package com.example.hourtracker_tfg
+package com.example.hourtracker_tfg.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.hourtracker_tfg.Navegation.NavigationScreens
+import com.example.hourtracker_tfg.app.core.NavigationScreens
 import com.example.hourtracker_tfg.ui.theme.HourTracker_TFGTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,4 +21,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

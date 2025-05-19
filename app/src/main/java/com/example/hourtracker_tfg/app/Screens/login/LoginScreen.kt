@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.Login
+package com.example.hourtracker_tfg.app.Screens.login
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -15,8 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.hourtracker_tfg.BDD.SessionManager
+import com.example.hourtracker_tfg.app.core.SessionManager
 import com.example.hourtracker_tfg.R
+import com.example.hourtracker_tfg.app.data.helpers.LoginDateBaseHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

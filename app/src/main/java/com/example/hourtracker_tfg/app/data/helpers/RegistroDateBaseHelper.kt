@@ -1,8 +1,9 @@
-package com.example.hourtracker_tfg.Registro
+package com.example.hourtracker_tfg.app.data.helpers
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import com.example.hourtracker_tfg.app.data.DatabaseManager
 
 class RegistroDateBaseHelper (context: Context) {
 

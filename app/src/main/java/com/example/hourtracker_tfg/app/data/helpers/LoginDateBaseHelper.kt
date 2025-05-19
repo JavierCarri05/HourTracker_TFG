@@ -1,9 +1,9 @@
-package com.example.hourtracker_tfg.Login
+package com.example.hourtracker_tfg.app.data.helpers
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
+import com.example.hourtracker_tfg.app.data.DatabaseManager
 
 class LoginDateBaseHelper (context: Context) {
     //Aqui obtengo la instancia que he creado del DataBaseManager

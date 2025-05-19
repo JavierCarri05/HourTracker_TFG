@@ -1,4 +1,4 @@
-package com.example.hourtracker_tfg.Navegation
+package com.example.hourtracker_tfg.app.core
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -12,14 +12,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.hourtracker_tfg.BDD.SessionManager
-import com.example.hourtracker_tfg.ScreensApp.Inicio.HourTrackerScreen
-import com.example.hourtracker_tfg.Login.LoginScreen
-import com.example.hourtracker_tfg.Registro.registroScreen
-import com.example.hourtracker_tfg.ScreensApp.Ajustes.AjustesScreen
-import com.example.hourtracker_tfg.ScreensApp.Eventos.eventosScreen
-import com.example.hourtracker_tfg.ScreensApp.Sumario.DetalleDia.DetalleTurnosScreen
-import com.example.hourtracker_tfg.ScreensApp.Sumario.SumarioScreen
+import com.example.hourtracker_tfg.app.Screens.inicio.HourTrackerScreen
+import com.example.hourtracker_tfg.app.Screens.login.LoginScreen
+import com.example.hourtracker_tfg.app.Screens.register.registroScreen
+import com.example.hourtracker_tfg.app.Screens.ajustes.AjustesScreen
+import com.example.hourtracker_tfg.app.Screens.eventos.eventosScreen
+import com.example.hourtracker_tfg.app.Screens.sumario.DetalleTurnosScreen
+import com.example.hourtracker_tfg.app.Screens.sumario.SumarioScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
