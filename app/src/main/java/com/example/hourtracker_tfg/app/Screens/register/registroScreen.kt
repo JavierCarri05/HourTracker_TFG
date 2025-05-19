@@ -152,6 +152,14 @@ fun registroScreen(navigateToLogin: () -> Unit, navigateToInicio: (Int) -> Unit)
             )
         )
 
+        if(contrasenaError){
+            Text(
+                text = "La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
@@ -217,7 +225,7 @@ fun registroScreen(navigateToLogin: () -> Unit, navigateToInicio: (Int) -> Unit)
                 containerColor = Color(0xFF3B82F7)
             )
         ) {
-            Text("Iniciar Sesión")
+            Text("Volver al login")
         }
     }
 }
