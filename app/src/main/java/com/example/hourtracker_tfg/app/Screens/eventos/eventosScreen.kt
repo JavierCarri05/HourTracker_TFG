@@ -1,37 +1,24 @@
 package com.example.hourtracker_tfg.app.Screens.eventos
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,121 +30,272 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.hourtracker_tfg.app.Screens.components.BarraNavegacion
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
+import com.example.hourtracker_tfg.app.data.helpers.Evento
+import com.example.hourtracker_tfg.app.data.helpers.EventosDataBaseHelper
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.util.Locale
-
-//Esta anotacion ya que como uso clase de Java Time, que no estan disponible para la API 24, esta disponible par la 26 y poniendo esa anotacion las coge
+import java.util.*
+/*
+Esta es la pantalla principal donde mostramos el calendario y los eventos para añadir, editar o eliminar
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun eventosScreen(idUsuario: Int, navController: NavController){
-    val hoy = remember { LocalDate.now() } //Esta variable es para coger la decha actual del dispositivo
-    var mes by remember { mutableStateOf(YearMonth.from(hoy)) }//Guardo el mes actual
-    var diaSeleccionado by remember { mutableStateOf(hoy) } //Guarda el dia que ha seleccionado el usuario
-
-    //Variable para añadir un evento
+fun eventosScreen(idUsuario: Int, navController: NavController) {
     val context = LocalContext.current
+    //variable para obtener la fecha y hora actual
+    val ahora = remember { LocalDateTime.now() }
+    //Formato de la fecha
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+
+    //Variable que representa el mes actual mostrandolo en el calendario
+    var mes by remember { mutableStateOf(YearMonth.from(ahora)) }
+    //Variable para el dia que selecciona el usuario
+    var diaSeleccionado by remember { mutableStateOf(ahora.toLocalDate()) }
+
+    val eventosDB = remember { EventosDataBaseHelper(context) }
+
+    //variable para la lista de los eventos del mes actual, esta se actualiza si cambiamos de mes
+    var eventosMes by remember(mes) {
+        mutableStateOf(eventosDB.obtenerEventosMes(idUsuario, mes.toString()))
+    }
+
     var dialog by remember { mutableStateOf(false) }
     var descripcionEvento by remember { mutableStateOf("") }
 
+    //SI estamos editando un evento o creandolo
+    var editarEvento by remember { mutableStateOf(false) }
+
+    //Esta es para la fecha del evento si esta editando
+    var fechaOriginal by remember { mutableStateOf<LocalDateTime?>(null) }
+
+    //Fecha para el nuevo evento
+    var nuevaFecha by remember { mutableStateOf(ahora) }
+
+    //Lista de los eventos al seleccionar un dia
+    val eventosDelDia = eventosMes.filter { it.fechaHora.toLocalDate() == diaSeleccionado }
+
     Scaffold(
         bottomBar = {
-            BarraNavegacion(
-                selectedItem = "Eventos",
-                idUsuario = idUsuario,
-                navController = navController
-            )
+            BarraNavegacion("Eventos", idUsuario, navController)
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                editarEvento = false
+                descripcionEvento = ""
+                nuevaFecha = LocalDateTime.of(diaSeleccionado, LocalTime.of(12, 0))
+                dialog = true
+            }) {
+                Icon(Icons.Default.Add, contentDescription = "Añadir evento")
+            }
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(horizontal = 8.dp)
+                .padding(8.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            cabeceraMes(
-                mesActual = mes, //Muestra el mes actual
-                anterior = { mes = mes.minusMonths(1) },//Sumo un mes
-                //Osea para ver el ems siguiente o el anterior
-                siguiente = { mes = mes.plusMonths(1) }//Resto un mes
-            )
+            //llamo a una fucnion auxiliar para mostra el mes y las flechas para moverme entre los meses
+            cabeceraMes(mes, { mes = mes.minusMonths(1) }, { mes = mes.plusMonths(1) })
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // fila de los nombre de los dias de la semana
             diasSemanas()
-
             Spacer(modifier = Modifier.height(4.dp))
 
+            //Grils de los dias del mes con eventos
             diasMeses(
                 mesActual = mes,
                 diaSeleccionado = diaSeleccionado,
-                fechaSeleccionada = { diaSeleccionado = it }
+                fechaSeleccionada = { fecha -> diaSeleccionado = fecha },
+                eventosPorDia = eventosMes.groupBy { it.fechaHora.toLocalDate() }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Eventos del día", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                //Si no hay ningun evento en el dia que ha seleccionado el usuario montramos que no hay eventos
+                if (eventosDelDia.isEmpty()) {
+                    item {
+                        Text("No hay eventos este día", color = Color.White)
+                    }
+                }
+                //Muestro la lista de cada evento
+                items(eventosDelDia.sortedByDescending { it.fechaHora }) { evento ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable {
+                                editarEvento = true
+                                fechaOriginal = evento.fechaHora
+                                nuevaFecha = evento.fechaHora
+                                descripcionEvento = evento.descripcion
+                                dialog = true
+                            },
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(text = evento.fechaHora.format(formatter), color = Color(0xFF64DD17))
+                            Text(text = evento.descripcion, color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (dialog) {
+            //Este dialog se utiliza para añadir o editar un evento
+            AlertDialog(
+                onDismissRequest = { dialog = false },
+                //Si pulsamos en un evento que ya existe, dialog sera para editar y si vamos añadir sera para nuevo evento
+                title = { Text(if (editarEvento) "Editar evento" else "Nuevo evento") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = descripcionEvento,
+                            onValueChange = { descripcionEvento = it },
+                            label = { Text("Descripción") }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(onClick = {
+                            val calendario = Calendar.getInstance()
+                            //Creo el date picker para escoger el dia del evento
+                            DatePickerDialog(
+                                context,
+                                { _, year, month, day ->
+                                    //Y despues para elegir la hora
+                                    TimePickerDialog(
+                                        context,
+                                        { _, hour, minute ->
+                                            nuevaFecha = LocalDateTime.of(year, month + 1, day, hour, minute)
+                                        },
+                                        calendario.get(Calendar.HOUR_OF_DAY),
+                                        calendario.get(Calendar.MINUTE),
+                                        true
+                                    ).show()
+                                },
+                                calendario.get(Calendar.YEAR),
+                                calendario.get(Calendar.MONTH),
+                                calendario.get(Calendar.DAY_OF_MONTH)
+                            ).show()
+                        }) {
+                            Text("Seleccionar fecha: ${nuevaFecha.format(formatter)}")
+                        }
+                    }
+                },
+                /*
+                Cuando vamos a guardar un evento antes compruebo que si ese evento existe
+                si existe no me dejara guardarlo
+                 */
+                confirmButton = {
+                    Button(
+                        enabled = descripcionEvento.isNotBlank(),
+                        onClick = {
+                            val eventoYaExiste = eventosDB.existeEvento(idUsuario, nuevaFecha)
+
+                            //Cuando editamos un evento y seleccionamos una fecha que esta asociada a un evento, no nos deja guardarlo
+                            if (!editarEvento && eventoYaExiste) {
+                                Toast.makeText(context, "Ya hay un evento asignado a esa fecha y hora", Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
+                            //Y aqui para guardar los cambios (actualizar o insertar)
+                            if (editarEvento && fechaOriginal != null) {
+                                eventosDB.actualizarEvento(idUsuario, fechaOriginal!!, nuevaFecha, descripcionEvento)
+                                eventosMes = eventosMes
+                                    .filterNot { it.fechaHora == fechaOriginal }
+                                    .plus(Evento(nuevaFecha, descripcionEvento))
+                            } else {
+                                eventosDB.insertarEvento(idUsuario, nuevaFecha, descripcionEvento)
+                                eventosMes = eventosMes + Evento(nuevaFecha, descripcionEvento)
+                            }
+
+                            dialog = false
+                            descripcionEvento = ""
+                        }
+                    ) {
+                        Text("Guardar")
+                    }
+                }
+,
+                dismissButton = {
+                    Row {
+                        TextButton(onClick = { dialog = false }) {
+                            Text("Cancelar")
+                        }
+                        if (editarEvento && fechaOriginal != null) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            TextButton(
+                                //Aqui llamos a la funcion para eliminar el evento
+                                onClick = {
+                                    eventosDB.eliminarEvento(idUsuario, fechaOriginal!!)
+                                    eventosMes = eventosMes.filterNot { it.fechaHora == fechaOriginal }
+                                    dialog = false
+                                }
+                            ) {
+                                Text("Eliminar", color = Color.Red)
+                            }
+                        }
+                    }
+                }
             )
         }
     }
-
 }
+
+/*
+    Funcion para mostrar la cabecera del calendario
+    con el nombre del mes y el año
+    y dos iconos < > para ir al mes anterior o al siguiente
+ */
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun cabeceraMes(
-    mesActual: YearMonth,
-    anterior: () -> Unit,
-    siguiente: () -> Unit
-){
-    Row (
+fun cabeceraMes(mesActual: YearMonth, anterior: () -> Unit, siguiente: () -> Unit) {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.SpaceBetween,//Distribuyo los botones y el texto
+        verticalAlignment = Alignment.CenterVertically //Centro los elementos verticalmente
     ) {
+        //Este es el boton para retroceder un mes
         IconButton(onClick = anterior) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Mes Anterior",
-                tint = Color.White
-            )
+            Icon(Icons.Default.ArrowBack, contentDescription = "Mes anterior", tint = Color.White)
         }
-
+        //Texto para mostrar el nombre del mes y el año
         Text(
-            //Convierto el objeto YearMonth en un String. Este es el mes (Mayo 2025)
             text = mesActual.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "ES"))),
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
-
+        //Boton para avanzar al mes siguiente
         IconButton(onClick = siguiente) {
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Mes siguiente",
-                tint = Color.White
-            )
+            Icon(Icons.Default.ArrowForward, contentDescription = "Mes siguiente", tint = Color.White)
         }
     }
 }
 
+/**
+Funcion para mostrar los nombre de los dias de la semana (LUN, MAR...)
+que estan en la parte superior del calendario y lo renderizo en un solo fila con el texto centrado
+ * @param mesActual este es la del mes actual
+ * @param anterior este ejecuta la accion de ir al mes anterior
+ * @param siguienteeste ejecuta la accion de ir al mes siguiente
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun diasSemanas(){
+fun diasSemanas() {
     Row(modifier = Modifier.fillMaxWidth()) {
-        //Aqui muestro los nombre de los dias de la semana. Lunes, Martes...
-        for(diaSemana in DayOfWeek.values()){
-            /*
-            Este recorre los 7 dias de las semana de la clase
-            DayOfWeek que es un enumerado que tiene los dias de la semana
-             */
+        for (dia in DayOfWeek.values()) {
             Text(
-                //Aqui obtengo el nombre del dia de la semana abreviado (Lunes --> LUN) y luego lo pongo en mayusculas
-                text = diaSemana.getDisplayName(TextStyle.SHORT, Locale("es", "ES")).uppercase(),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 4.dp),
+                text = dia.getDisplayName(TextStyle.SHORT, Locale("es", "ES")).uppercase(),
+                modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -167,114 +305,81 @@ fun diasSemanas(){
     }
 }
 
-
+/**
+Esta funcion renderiza todos lo dias del mes actual en una cuadricula de 7 columnas (osea 7 dias)
+Marca el dia que hemos seleccionado, el dia actual y tambien cuantos dias hay por mes
+ * @param mesActual Muestra el mes actual en el calendario
+ * @param diaSeleccionado dia seleccionado
+ * @param fechaSeleccionada actualiza el dia seleccionado
+ * @param eventosPorDia mapa para agrupar los eventos por fechas
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun diasMeses(
-    mesActual: YearMonth, //Varibale para ver el mes
-    diaSeleccionado: LocalDate, //Dia que sea seleccionado
-    fechaSeleccionada: (LocalDate) -> Unit //
-){
-    val hoy = LocalDate.now()
+    mesActual: YearMonth,
+    diaSeleccionado: LocalDate,
+    fechaSeleccionada: (LocalDate) -> Unit,
+    eventosPorDia: Map<LocalDate, List<Evento>>
+) {
+    val hoy = LocalDate.now() //Dia actual
     val primerDiaMes = mesActual.atDay(1) //Coge el primer dia del mes
-    val ultimoDiaMes = mesActual.atEndOfMonth() //Coge el ultimo dia del mes
-
-    /*
-    primerDiaMes.dayOfWeek.value nos da un indice del dia (Lunes = 1, Martes = 2...)
-    le sumo 6 y luego % 7 para que el calendario empiece por lunes
-     */
-    val diaDeLaSemana = (primerDiaMes.dayOfWeek.value + 6) % 7
-
-    /*
-    Aqui calculo cuantas celdas necesitamos
-    ya que hay dias que son "invisibles" porque el mes por ejemplo acaba en sabado y el domingo ya no
-    pertenece a ese mes, entonces seria invisible
-     */
-    val diasTotales = diaDeLaSemana + mesActual.lengthOfMonth()
-    val celdasTotales = if(diasTotales % 7 == 0) diasTotales else diasTotales
+    val diaSemana = (primerDiaMes.dayOfWeek.value + 6) % 7 //COge los 7 dias de la semana
+    val totalCeldas = diaSemana + mesActual.lengthOfMonth()//Y aqui redenrizo las celdas incluyendo las vacias
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(7),
+        columns = GridCells.Fixed(7), //7 columnas para los 7 dias de la semana
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        items(celdasTotales) { i ->
-            /*
-            Aqui recorro cada celda del calendario
-            entocnes si i < diaDeLaSemana es que la celda esta vacia
-            y Si i >= muestra el dia del mes
-             */
-            if(i < diaDeLaSemana){
-                Box(
+        items(totalCeldas) { i ->
+            if (i < diaSemana) {
+                //Esto rellena las celdas que estan vacias anres de comenzar el mes
+                Box(Modifier.aspectRatio(1f).padding(4.dp))
+            } else {
+                val dia = i - diaSemana + 1
+                val fecha = mesActual.atDay(dia)
+                val seleccionado = diaSeleccionado == fecha
+                val esHoy = fecha == hoy
+                val eventosDia = eventosPorDia[fecha]?.size ?: 0
+
+                //Aqui defino el color de fondo segun si es hora o hemos seleccionado otros dia y tabmien para cuando tienen eventos
+                val fondo = when {
+                    seleccionado && esHoy -> Color.Red
+                    seleccionado -> Color.White
+                    esHoy -> Color.Red
+                    eventosDia > 0 -> Color(0xFF64DD17)
+                    else -> Color.Transparent
+                }
+
+                val texto = when {
+                    seleccionado || esHoy -> Color.Black
+                    else -> Color.White
+                }
+
+                //Estos son los dias del mes marcado como un circulo clikable
+                Column(
                     modifier = Modifier
                         .aspectRatio(1f)
                         .padding(4.dp)
-                )
-            }else{
-                /*
-                esta parte calcula el numero del dia real
-                si esta seleccionado y si es hoy
-                 */
-                val dia = i - diaDeLaSemana + 1
-                if(dia <= ultimoDiaMes.dayOfMonth){
-                    val fecha = mesActual.atDay(dia)
-                    val seleccionado = diaSeleccionado.equals(fecha)
-                    val esHoy = fecha.equals(hoy)
-
-                    /*
-                    ajusto el color del fondo y del texto segun si:
-                    el dia que he seleccionado el fondo es rojo (para que sea mas visual el dia actual)
-                    si seleccion uno que no es hoy el fondo lo pongo en blanco
-                     */
-                    val backgroundColor = when {
-                        seleccionado && esHoy -> Color.Red
-                        seleccionado -> Color.White
-                        else -> Color.Transparent
-                    }
-                    /*
-                    Ajusto el color del texto
-                    si el dia que he seleccion es hoy pues el texto en negro (ya que el fondo es rojo)
-                    tambien el dia actual lo pongo rojo para resaltarlo
-                    y el dia normal en blanco
-                     */
-                    val textColor = when{
-                        seleccionado -> Color.Black
-                        esHoy -> Color.Red
-                        else -> Color.White
-                    }
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .height(56.dp)
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                            .clip(CircleShape)
-                            .background(backgroundColor)
-                            .border(
-                                width = if (seleccionado) 2.dp else 0.dp,
-                                color = if (seleccionado) {
-                                    if (esHoy) Color.Red else Color(0xFF006064)
-                                } else Color.Transparent,
-                                shape = CircleShape
-                            )
-                            .clickable { fechaSeleccionada(fecha) }
-                    ) {
+                        .clip(CircleShape)
+                        .background(fondo)
+                        .clickable { fechaSeleccionada(fecha) },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = dia.toString(),
+                        color = texto,
+                        fontWeight = if (seleccionado || esHoy) FontWeight.Bold else FontWeight.Normal
+                    )
+                    //Si tiene eventos ese dia, pongo el numero de los eventos que tiene ese dia
+                    if (eventosDia > 0) {
                         Text(
-                            text = dia.toString(),
-                            textAlign = TextAlign.Center,
-                            color = textColor,
-                            fontWeight = if (seleccionado || esHoy) FontWeight.Bold else FontWeight.Normal,
-                            fontSize = 20.sp
+                            text = "$eventosDia",
+                            color = Color.Black,
+                            fontSize = 10.sp
                         )
                     }
-
-                }else{
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .padding(4.dp)
-                    )
                 }
             }
         }
