@@ -113,7 +113,11 @@ fun BottomShet(
                         if (comienzo.isNotEmpty() && fin.isNotEmpty()) {
                             val isTurno = bdd.existeTurno(idUsuario, comienzo, fin, -1)
                             if (isTurno) {
-                                Toast.makeText(context, "Ya existe un turno en ese horario", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Ya existe un turno en ese horario",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 return@TextButton //Esto es para que no me deje guardar si se va a repetir un turno
                             }
 
@@ -122,36 +126,50 @@ fun BottomShet(
                             val fechaInicio = sdfFull.parse(comienzo)
                             val fechaFin = sdfFull.parse(fin)
 
-                            if (fechaInicio == null || fechaFin == null || fechaFin.before(fechaInicio)) {
-                                Toast.makeText(context, "La fecha de fin debe ser posterior a la de inicio", Toast.LENGTH_LONG).show()
+                            if (fechaInicio == null || fechaFin == null || fechaFin.before(
+                                    fechaInicio
+                                )
+                            ) {
+                                Toast.makeText(
+                                    context,
+                                    "La fecha de fin debe ser posterior a la de inicio",
+                                    Toast.LENGTH_LONG
+                                ).show()
                                 return@TextButton
                             }
-                                val pausaInt = try {
-                                    val parts = pausa.split("h", "m").map { it.trim() }
-                                    val horas = parts[0].toIntOrNull() ?: 0
-                                    val minutos = parts[1].toIntOrNull() ?: 0
-                                    (horas * 60) + minutos
-                                } catch (e: Exception) {
-                                    0
-                                }
+                            val pausaInt = try {
+                                val parts = pausa.split("h", "m").map { it.trim() }
+                                val horas = parts[0].toIntOrNull() ?: 0
+                                val minutos = parts[1].toIntOrNull() ?: 0
+                                (horas * 60) + minutos
+                            } catch (e: Exception) {
+                                0
+                            }
 
-                                val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
-                                val plusVal = plus.toDoubleOrNull() ?: 0.0
+                            //Esta validacion es para que cuando se rellenen las fechas de inicio y fin y si se añade pausa que no superior al tiempo trabajado
+                            val duracionMin = ((fechaFin.time - fechaInicio.time) / (1000 * 60)).toInt() - pausaInt
+                            if (duracionMin <= 0) {
+                                Toast.makeText(context, "La pausa no puede ser mayor o igual que la duración del turno", Toast.LENGTH_LONG).show()
+                                return@TextButton
+                            }
 
-                                bdd.insertarTurno(
-                                    idUsuario = idUsuario,
-                                    fechaInicio = comienzo,
-                                    fechaFin = fin,
-                                    pausa = pausaInt,
-                                    tarifaHora = tarifa,
-                                    plus = plusVal,
-                                    nota = nota
-                                )
+                            val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
+                            val plusVal = plus.toDoubleOrNull() ?: 0.0
 
-                                scope.launch {
-                                    sheetState.hide()
-                                    onDismiss()
-                                }
+                            bdd.insertarTurno(
+                                idUsuario = idUsuario,
+                                fechaInicio = comienzo,
+                                fechaFin = fin,
+                                pausa = pausaInt,
+                                tarifaHora = tarifa,
+                                plus = plusVal,
+                                nota = nota
+                            )
+
+                            scope.launch {
+                                sheetState.hide()
+                                onDismiss()
+                            }
                         } else {
                             // Campos obligatorios no completados
                             Toast.makeText(
