@@ -50,7 +50,7 @@ fun NavigationScreens() {
             )
         }
 
-        composable("registro") {
+             composable("registro") {
             registroScreen(
                 navigateToLogin = { navController.navigate("login") }, // Navegar a login
                 navigateToInicio = { id ->

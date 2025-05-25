@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     id("kotlin-kapt")
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
 
 }
 
@@ -57,6 +59,7 @@ dependencies {
     //Implementacion para la navegación
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.serialization.json)
+    implementation(libs.firebase.crashlytics)
     val nav_version = "2.8.9"
     implementation("androidx.navigation:navigation-compose:$nav_version")
     //******************

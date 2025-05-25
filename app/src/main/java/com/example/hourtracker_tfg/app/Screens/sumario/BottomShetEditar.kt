@@ -156,6 +156,15 @@ fun BottomShetEditar(
                         val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
                         val plusVal = plus.toDoubleOrNull() ?: 0.0
 
+                        val duracionMin = ((fechaFinal.time - fechaInicio.time) / (1000 * 60)).toInt() - pausaInt
+                        if(duracionMin <= 0){
+                            Toast.makeText(context, "La pausa no puede ser mayor o igual que la duración del turno", Toast.LENGTH_LONG).show()
+                            return@TextButton
+                        }
+                        val horas = duracionMin / 60.0
+                        val nuevaGanancia = (horas * tarifa) + plusVal
+                        ganancias = String.format("%.2f", nuevaGanancia)
+
                         bdd.actualizarTurno(
                             idTurno = turno.idTurno,
                             fechaInicio = comienzo,
