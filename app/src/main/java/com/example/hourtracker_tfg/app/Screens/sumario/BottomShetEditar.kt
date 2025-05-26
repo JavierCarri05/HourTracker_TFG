@@ -136,7 +136,7 @@ fun BottomShetEditar(
                         val fechaInicio = sdf.parse(comienzo)
                         val fechaFinal = sdf.parse(fin)
 
-                        if (fechaInicio == null || fechaFin == null || fechaFin.before(fechaInicio)) {
+                        if (fechaFinal.before(fechaInicio)) {
                             Toast.makeText(
                                 context,
                                 "La fecha de fin debe ser posterior a la de inicio",
