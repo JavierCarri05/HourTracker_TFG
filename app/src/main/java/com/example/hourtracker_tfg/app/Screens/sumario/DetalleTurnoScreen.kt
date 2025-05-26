@@ -36,6 +36,8 @@ import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper.EditarTurno
 import com.example.hourtracker_tfg.app.Screens.components.BarraNavegacion
 import com.example.hourtracker_tfg.app.Screens.inicio.BottomShet
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun DetalleTurnosScreen(
@@ -208,11 +210,16 @@ fun totalDia(turnos: List<EditarTurno>): Pair<String, String> {
     var dineroTotal = 0.0
 
     turnos.forEach { turno ->
-        val partes = turno.horas.split("h", "m").map { it.trim() }
-        val horas = partes[0].toIntOrNull() ?: 0
-        val minutos = partes[1].toIntOrNull() ?: 0
-        minutosTotales += (horas * 60) + minutos
-        dineroTotal += turno.ganancia.replace("€", "").replace(",", ".").toDoubleOrNull() ?: 0.0
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "ES"))
+        val inicio = sdf.parse(turno.fechaInicio)
+        val fin = sdf.parse(turno.fechaFin)
+
+        if(inicio != null && fin != null){
+            val duracionMin = ((fin.time - inicio.time) / (1000 * 60)).toInt() - turno.pausa
+            val horas = duracionMin / 60.0
+            minutosTotales += duracionMin
+            dineroTotal += (horas * turno.tarifaHora) + turno.plus
+        }
     }
 
     val horasString = "${minutosTotales / 60}h ${minutosTotales % 60}m"

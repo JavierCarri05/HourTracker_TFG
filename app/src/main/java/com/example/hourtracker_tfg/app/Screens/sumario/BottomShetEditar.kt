@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper.EditarTurno
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -153,8 +154,25 @@ fun BottomShetEditar(
                             0
                         }
 
-                        val tarifa = tarifaPorHora.toDoubleOrNull() ?: 0.0
-                        val plusVal = plus.toDoubleOrNull() ?: 0.0
+                        val localeES = Locale("es", "ES")
+                        val numberFormat = NumberFormat.getInstance(localeES)
+
+                        val tarifa = try {
+                            numberFormat.parse(tarifaPorHora)?.toDouble() ?: 0.0
+                        } catch (e: Exception) {
+                            0.0
+                        }
+
+                        val plusVal = try {
+                            numberFormat.parse(plus)?.toDouble() ?: 0.0
+                        } catch (e: Exception) {
+                            0.0
+                        }
+
+                        if (tarifa <= 0.0) {
+                            Toast.makeText(context, "Introduce una tarifa válida como 4,23", Toast.LENGTH_LONG).show()
+                            return@TextButton
+                        }
 
                         val duracionMin = ((fechaFinal.time - fechaInicio.time) / (1000 * 60)).toInt() - pausaInt
                         if(duracionMin <= 0){

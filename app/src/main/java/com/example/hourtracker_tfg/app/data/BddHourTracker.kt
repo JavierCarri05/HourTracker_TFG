@@ -9,7 +9,7 @@ class BddHourTracker (context: Context) : SQLiteOpenHelper(context, NOMBRE_BDD, 
     //Aqui defino el nombre y la version de la bdd
     companion object{
         const val NOMBRE_BDD = "HourTracker.db"
-        const val VERSION_BDD = 2
+        const val VERSION_BDD = 3
     }
 
     //CREAR Y BORRAR TABLAS
@@ -56,6 +56,10 @@ class BddHourTracker (context: Context) : SQLiteOpenHelper(context, NOMBRE_BDD, 
         db.execSQL(CREAR_TABLA_USUARIOS) //Creo la tabla
         db.execSQL(CREAR_TABLA_TURNOS)
         db.execSQL(CREAR_TABLA_EVENTOS)
+        db.execSQL("""
+        INSERT INTO usuarios (gmail, nombre_usuario, contrasena)
+        VALUES ('admin@gmail.com', 'admin', 'Admin-1');
+    """.trimIndent())
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
