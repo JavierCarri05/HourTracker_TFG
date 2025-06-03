@@ -271,31 +271,36 @@ class TurnosDataBaseHelper(context: Context) {
 
         mapa.forEach { (mes, diasMap) ->
             //En este forEach recorro todo lo que agrupo y asi hacer los calculos (sumar las horas, sumar las ganancias y crear un dia de trabajo por cada dia)
-            val listaDias = diasMap.map { (dia, turnos) ->
-                var totalMinutos = 0
-                var totalGanancias = 0.0
+            val listaDias = diasMap
+                //convierto el diasMap a un sortedMap odernado de forma descendente
+                //Y asi me aparece el dia mas reciente de cada mes
+                .toSortedMap(compareByDescending { fecha ->
+                    SimpleDateFormat("dd/MM/yyyy", Locale("es", "ES")).parse(fecha)
+                })
+                .map { (dia, turnos) ->
+                    var totalMinutos = 0
+                    var totalGanancias = 0.0
 
-                val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", pais)
+                    val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", pais)
 
-                turnos.forEach { turno ->
-                    val comienzo = sdf.parse(turno.fechaInicio)
-                    val fin = sdf.parse(turno.fechaFin)
-                    if (comienzo != null && fin != null) {
-                        val duracion =
-                            ((fin.time - comienzo.time) / (1000 * 60)).toInt() - turno.pausa
-                        val hora = duracion / 60.0
-                        totalMinutos += duracion
-                        totalGanancias += (hora * turno.tarifaHora) + turno.plus
+                    turnos.forEach { turno ->
+                        val comienzo = sdf.parse(turno.fechaInicio)
+                        val fin = sdf.parse(turno.fechaFin)
+                        if (comienzo != null && fin != null) {
+                            val duracion = ((fin.time - comienzo.time) / (1000 * 60)).toInt() - turno.pausa
+                            val hora = duracion / 60.0
+                            totalMinutos += duracion
+                            totalGanancias += (hora * turno.tarifaHora) + turno.plus
+                        }
                     }
-                }
 
-                DiaTrabajo(
-                    fecha = dia,
-                    turnosTotales = turnos.size,
-                    horas = "${totalMinutos / 60}h ${totalMinutos % 60}m",
-                    ganancias = String.format("%.2f €", totalGanancias)
-                )
-            }
+                    DiaTrabajo(
+                        fecha = dia,
+                        turnosTotales = turnos.size,
+                        horas = "${totalMinutos / 60}h ${totalMinutos % 60}m",
+                        ganancias = String.format("%.2f €", totalGanancias)
+                    )
+                }
             resultado[mes] = listaDias
         }
         return resultado
