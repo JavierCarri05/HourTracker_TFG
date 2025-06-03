@@ -188,7 +188,7 @@ class TurnosDataBaseHelper(context: Context) {
             SELECT fecha_inicio, fecha_fin, pausa, tarifa_hora, plus
             FROM turnos
             WHERE id_usuario = ?
-            ORDER BY fecha_inicio DESC
+            ORDER BY fecha_inicio ASC
             """.trimIndent(), arrayOf(idUsuario.toString())
             //Ordeno la consulta de manera descendente para que me muestre lo mas actual
         )
