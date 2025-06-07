@@ -40,20 +40,13 @@ fun BottomShetEditar(
     var fin by remember { mutableStateOf(turno.fechaFin) }
     var pausa by remember { mutableStateOf("${turno.pausa / 60}h ${turno.pausa % 60}m") }
     var tarifaPorHora by remember { mutableStateOf(String.format("%.2f", turno.tarifaHora)) }
-
+    
     /*
     if(turno.plus == 0.0) "" else String.format("%.2f", turno.plus))
     esto si cuando edito un turno que no tiene plus
     pues que me lo muestre vacio y no 0.00
      */
-    var plus by remember {
-        mutableStateOf(
-            if (turno.plus == 0.0) "" else String.format(
-                "%.2f",
-                turno.plus
-            )
-        )
-    }
+    var plus by remember { mutableStateOf( if (turno.plus == 0.0) "" else String.format( "%.2f", turno.plus ) ) }
     var nota by remember { mutableStateOf(turno.nota) }
     var ganancias by remember { mutableStateOf(turno.ganancia) }
 
@@ -77,7 +70,7 @@ fun BottomShetEditar(
     }
 
     //Esta variable es para que se pueda hacer scroll en el BottomShet
-    val scrollState = rememberScrollState()
+    val scroll = rememberScrollState()
 
     LaunchedEffect(Unit) {
         scope.launch { sheetState.show() }
@@ -158,13 +151,13 @@ fun BottomShetEditar(
                         val numberFormat = NumberFormat.getInstance(localeES)
 
                         val tarifa = try {
-                            numberFormat.parse(tarifaPorHora)?.toDouble() ?: 0.0
+                            numberFormat.parse(tarifaPorHora.replace(".", ","))?.toDouble() ?: 0.0
                         } catch (e: Exception) {
                             0.0
                         }
 
                         val plusVal = try {
-                            numberFormat.parse(plus)?.toDouble() ?: 0.0
+                            numberFormat.parse(plus.replace(".", ","))?.toDouble() ?: 0.0
                         } catch (e: Exception) {
                             0.0
                         }
@@ -210,7 +203,7 @@ fun BottomShetEditar(
                     .fillMaxWidth()
                     .padding(16.dp)
                     .padding(bottom = 32.dp)
-                    .verticalScroll(scrollState)
+                    .verticalScroll(scroll)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 

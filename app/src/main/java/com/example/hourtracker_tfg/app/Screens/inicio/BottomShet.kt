@@ -21,6 +21,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -66,6 +67,8 @@ fun BottomShet(
     var fechaComienzo by remember { mutableStateOf<Calendar?>(null) }
     var fechaFin by remember { mutableStateOf<Calendar?>(null) }
 
+    //Varible para que se pueda hacer scroll en el bottomShet
+    val scroll = rememberScrollState()
 
     // Mostrar la sheet directamente cuando se monta
     LaunchedEffect(Unit) {
@@ -188,6 +191,7 @@ fun BottomShet(
                     .fillMaxWidth()
                     .padding(16.dp)
                     .padding(bottom = 32.dp)
+                    .verticalScroll(scroll)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 

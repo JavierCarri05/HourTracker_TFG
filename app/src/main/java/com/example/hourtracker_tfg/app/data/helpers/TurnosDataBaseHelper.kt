@@ -185,11 +185,11 @@ class TurnosDataBaseHelper(context: Context) {
     fun jornadasPorMes(idUsuario: Int): Map<String, List<DiaTrabajo>> {
         val cursor = db.rawQuery(
             """
-            SELECT fecha_inicio, fecha_fin, pausa, tarifa_hora, plus
-            FROM turnos
-            WHERE id_usuario = ?
-            ORDER BY fecha_inicio ASC
-            """.trimIndent(), arrayOf(idUsuario.toString())
+        SELECT fecha_inicio, fecha_fin, pausa, tarifa_hora, plus
+        FROM turnos
+        WHERE id_usuario = ?
+        ORDER BY fecha_inicio DESC
+        """.trimIndent(), arrayOf(idUsuario.toString())
             //Ordeno la consulta de manera descendente para que me muestre lo mas actual
         )
 
@@ -264,12 +264,17 @@ class TurnosDataBaseHelper(context: Context) {
         }
         cursor.close()
 
-        //Ahora el mapa lo convierto a al estructura final
+        val formatoMes = SimpleDateFormat("MMMM yyyy", pais)
+
+        //Ordeno los meses de manera descendente (Julio > Junio > Abril)
+        val mapaOrdenado = mapa.toSortedMap(compareByDescending { mesString ->
+            formatoMes.parse(mesString)
+        })
 
         //Me creo un mapa final para devolver solo lo que necesito mostrar por pantalla
-        val resultado = mutableMapOf<String, List<DiaTrabajo>>()
+        val resultadoFinal = mutableMapOf<String, List<DiaTrabajo>>()
 
-        mapa.forEach { (mes, diasMap) ->
+        mapaOrdenado.forEach { (mes, diasMap) ->
             //En este forEach recorro todo lo que agrupo y asi hacer los calculos (sumar las horas, sumar las ganancias y crear un dia de trabajo por cada dia)
             val listaDias = diasMap
                 //convierto el diasMap a un sortedMap odernado de forma descendente
@@ -301,10 +306,13 @@ class TurnosDataBaseHelper(context: Context) {
                         ganancias = String.format("%.2f €", totalGanancias)
                     )
                 }
-            resultado[mes] = listaDias
+
+            resultadoFinal[mes] = listaDias
         }
-        return resultado
+
+        return resultadoFinal
     }
+
 
     //Clase para almacenar cada turno antes de sumarlo
     //Y tambien la creo para qeu quede mas limpio el codigo
