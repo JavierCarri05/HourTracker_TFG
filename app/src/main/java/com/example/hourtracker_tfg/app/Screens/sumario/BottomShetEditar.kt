@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper
 import com.example.hourtracker_tfg.BDD.TurnosDataBaseHelper.EditarTurno
@@ -163,7 +164,7 @@ fun BottomShetEditar(
                         }
 
                         if (tarifa <= 0.0) {
-                            Toast.makeText(context, "Introduce una tarifa válida como 4,23", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Introduce la tarifa por hora", Toast.LENGTH_LONG).show()
                             return@TextButton
                         }
 
@@ -338,9 +339,9 @@ fun BottomShetEditar(
                             value = tarifaPorHora,
                             onValueChange = { valor ->
                                 // Solo permitir números decimales con máximo 2 decimales
-                                if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
-                                    tarifaPorHora = valor
-                                }
+//                                if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
+//                                }
+                                tarifaPorHora = valor
                             },
                             label = { Text("Tarifa por hora", color = Color.White) },
                             modifier = Modifier.fillMaxWidth(),
@@ -361,10 +362,7 @@ fun BottomShetEditar(
                         OutlinedTextField(
                             value = plus,
                             onValueChange = { valor ->
-                                // Solo permitir números decimales con máximo 2 decimales
-                                if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
-                                    plus = valor
-                                }
+                                plus = valor
                             },
                             label = { Text("Plus", color = Color.White) },
                             modifier = Modifier.fillMaxWidth(),
@@ -385,10 +383,7 @@ fun BottomShetEditar(
                         OutlinedTextField(
                             value = ganancias,
                             onValueChange = { valor ->
-                                // Solo permitir números decimales con máximo 2 decimales
-                                if (valor.matches(Regex("^\\d*(\\.\\d{0,2})?$"))) {
-                                    ganancias = valor
-                                }
+                                ganancias = valor
                             },
                             label = { Text("Ganancias", color = Color.White) },
                             modifier = Modifier.fillMaxWidth(),
